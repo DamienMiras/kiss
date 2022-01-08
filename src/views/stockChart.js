@@ -2,14 +2,14 @@ import React, {Component} from 'react';
 
 
 import HighchartsReact from 'highcharts-react-official';
-import Highcharts from "highcharts/highstock";
-import HighchartsHeikinashi from "highcharts/modules/heikinashi";
+import Highcharts from "highcharts/highstock.src";
+import HighchartsHeikinashi from "highcharts/modules/heikinashi.src";
 import Indicators from "highcharts/indicators/indicators-all.js";
 import DragPanes from "highcharts/modules/drag-panes.js";
-import AnnotationsAdvanced from "highcharts/modules/annotations-advanced.js";
-import PriceIndicator from "highcharts/modules/price-indicator.js";
-import FullScreen from "highcharts/modules/full-screen.js";
-import StockTools from "highcharts/modules/stock-tools.js";
+import AnnotationsAdvanced from "highcharts/modules/annotations-advanced.src.js";
+import PriceIndicator from "highcharts/modules/price-indicator.src.js";
+import FullScreen from "highcharts/modules/full-screen.src.js";
+import StockTools from "highcharts/modules/stock-tools.src.js";
 
 StockTools(Highcharts);
 Indicators(Highcharts);
@@ -134,8 +134,23 @@ class StockChart extends Component {
         );
     }
 
+    updateNavigator() {
+        let options = {
+            chartOptions: {
+                xAxis: {
+                    min: this.minDate,
+                    max: this.maxDate
+                }
+            }
+        }
+
+        this.setState(options);
+    }
+
     updateChart() {
 
+
+        console.log("chunk periode : " + new Date(this.first) + " " + new Date(this.last));
         //TODO display flags
         //https://www.highcharts.com/docs/stock/flag-series
         //https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/stock/demo/flags-general
@@ -303,7 +318,8 @@ class StockChart extends Component {
         let url = "/api/getOHLC";
         if (this.last !== undefined) {
             url += "?last=" + this.last;
-            url += "&limit=5000";
+            //3days
+            url += "&limit=4320";
         }
 
         fetch(url)
@@ -331,7 +347,19 @@ class StockChart extends Component {
                     if (result.OHLC !== undefined) {
                         let OHLC = result.OHLC;
                         for (let i = 0; i < OHLC.length; i++) {
+                            /*TODO perf improv load only 24h to the graph display by default only 8h
+                            //update the graph when navigator is moved or increased
+                            */
+
                             let time = OHLC[i][0];
+                            /*
+                            if(i % 200 === 0) {
+                                this.minDate = this.first- 1000 * 60 * 60 * 48;
+                                this.maxDate = time- 1000 * 60 * 60 * 48;
+                                this.updateNavigator();
+                            }*
+
+                             */
                             this.data.push(this.parsePointOf(OHLC[i], metaOhlc));
                             if (metaOhlc.vwap !== undefined) {
                                 this.parseIndicator(OHLC[i][metaOhlc.vwap.index], time, "vwap", "ohlc");
@@ -347,22 +375,24 @@ class StockChart extends Component {
                                     this.parseIndicator(indicators[key], time, metaIndicator[key].name, metaIndicator[key].group);
                                 }
                             }
+
                         }
 
+                        if (this.last - this.first < 1000 * 60 * 60 * 8) {
+                            this.minDate = this.last - 1000 * 60 * 60 * 8;
+                            this.maxDate = this.last;
+                        } else {
+                            this.minDate = this.first - 1000 * 60 * 60 * 48;
+                            this.maxDate = this.last - 1000 * 60 * 60 * 48;
+                        }
+                        this.updateChart();
                     } else {
                         console.error("meta.OHLC undefined");
                     }
 
                     //
-                    //this.maxDate = this.first;
-                    if (this.last - this.first < 1000 * 60 * 60 * 8) {
-                        this.minDate = this.last - 1000 * 60 * 60 * 8;
-                    } else {
-                        this.minDate = this.first;
-                    }
-                    this.maxDate = this.last;
-                    console.log("chunk periode : " + new Date(this.first) + " " + new Date(this.last));
-                    this.updateChart();
+
+                    //
                     if (this.synchronizedYet === false && this.firstBatch === false) {
                         //pace down every minute
                         console.log("request synchronized pacedown the timer")
