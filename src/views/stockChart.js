@@ -30,6 +30,10 @@ class StockChart extends Component {
 
         this.serieMap = {};
         this.serieData = {};
+        this.last = undefined;
+        this.first = undefined;
+        this.minDate = undefined;
+        this.maxDate = undefined;
         this.options = {
             chartOptions: {
                 series: [
@@ -59,23 +63,24 @@ class StockChart extends Component {
                         pointPadding: -0.1
                     }
                 },
+
                 yAxis: [
                     {
                         title: {
                             text: 'OHLC'
                         },
-                        height: '80%',
+                        height: '60%',
                         resize: {
                             enabled: true
                         }
                     },
                     {
                         title: {
-                            text: 'MACD 1'
+                            text: 'MACD short'
                         },
                         color: "#ffe57f",
-                        height: '10%',
-                        top: '80%',
+                        height: '20%',
+                        top: '60%',
                         marker: {
                             enabled: true
                         },
@@ -85,11 +90,26 @@ class StockChart extends Component {
                         }
                     }, {
                         title: {
-                            text: 'MACD 2'
+                            text: 'MACD long'
                         },
                         color: "#ffe57f",
-                        height: '10%',
-                        top: '90%',
+                        height: '15%',
+                        top: '80%',
+                        marker: {
+                            enabled: true
+                        },
+                        grouping: false,
+                        resize: {
+                            enabled: true
+                        }
+                    }
+                    , {
+                        title: {
+                            text: 'Volume'
+                        },
+                        color: "#ffe57f",
+                        height: '5%',
+                        top: '95%',
                         marker: {
                             enabled: true
                         },
@@ -104,7 +124,17 @@ class StockChart extends Component {
 
     }
 
-    updateChart(serie) {
+    convertDateToUTC(date) {
+        return new Date(date.getUTCFullYear(),
+            date.getUTCMonth(),
+            date.getUTCDate(),
+            date.getUTCHours(),
+            date.getUTCMinutes(),
+            date.getUTCSeconds()
+        );
+    }
+
+    updateChart() {
 
         //TODO display flags
         //https://www.highcharts.com/docs/stock/flag-series
@@ -114,6 +144,10 @@ class StockChart extends Component {
 
         let options = {
             chartOptions: {
+                xAxis: {
+                    min: this.minDate,
+                    max: this.maxDate
+                },
                 series: [
                     {
                         yAxis: 0,
@@ -121,79 +155,99 @@ class StockChart extends Component {
                         name: 'Heikin Ashi',
                         data: this.data,
                         id: 'hikinashiId'
-                    },
-                    this.serieMap["m260c120h90"],
-                    this.serieMap["m260c120_90"],
-                    this.serieMap["m260c120s90"],
-                    this.serieMap["m26c12h9"],
-                    this.serieMap["m26c12_9"],
-                    this.serieMap["m26c12s9"],
-                    this.serieMap["e200c"],
-                    this.serieMap["e1000c"],
-                    this.serieMap["e5000c"]
-
+                    }
                 ]
             }
-        };
+        }
+        for (let key in this.serieMap) {
+            options.chartOptions.series.push(this.serieMap[key]);
+        }
         this.setState(options);
     }
 
-
-
-    parseIndicator(key, pointValue, time) {
+    parseIndicator(pointValue, time, name, group) {
         let color = "#c2ff00";
-        let name = key;
         let point = [];
-        if (key.startsWith("e")) {
+        if (name.startsWith("ema")) {
             //ema
-            if (this.serieMap[key] === undefined) {
-                name = "ema" + key.substr(1, key.length - 1) + this.getPriceType(key.charAt(key.length - 1));
+            if (this.serieMap[name] === undefined) {
                 color = "#c2ff00";
-                this.serieData[key] = [];
-                this.serieMap[key] = {
+                this.serieData[name] = [];
+                this.serieMap[name] = {
                     yAxis: 0,
                     name: name,
                     color: color,
-                    data: this.serieData[key]
+                    data: this.serieData[name]
                 }
             } else {
                 point.push(time);
                 point.push(pointValue);
-                this.serieData[key].push(point);
+                this.serieData[name].push(point);
             }
-        } else if (key.startsWith("s")) {
+        } else if (name.startsWith("vwap")) {
             //sma
-            if (this.serieMap[key] === undefined) {
-                name = "sma" + key.substr(1, key.length - 1) + this.getPriceType(key.charAt(key.length - 1));
-                color = "#7b66fc";
-                this.serieData[key] = [];
-                this.serieMap[key] = {
+            if (this.serieMap[name] === undefined) {
+                color = "#00ffff";
+                this.serieData[name] = [];
+                this.serieMap[name] = {
                     yAxis: 0,
                     name: name,
                     color: color,
-                    data: this.serieData[key]
+                    data: this.serieData[name]
                 }
             } else {
                 point.push(time);
                 point.push(pointValue);
-                this.serieData[key].push(point);
+                this.serieData[name].push(point);
             }
-        } else if (key.startsWith("m")) {
+        } else if (name.startsWith("volume")) {
+            //sma
+            if (this.serieMap[name] === undefined) {
+                color = "#79ff37";
+                this.serieData[name] = [];
+                this.serieMap[name] = {
+                    yAxis: 3,
+                    name: name,
+                    type: 'column',
+                    color: color,
+                    data: this.serieData[name]
+                }
+            } else {
+                point.push(time);
+                point.push(pointValue);
+                this.serieData[name].push(point);
+            }
+        } else if (name.startsWith("sma")) {
+            //sma
+            if (this.serieMap[name] === undefined) {
+                color = "#7b66fc";
+                this.serieData[name] = [];
+                this.serieMap[name] = {
+                    yAxis: 0,
+                    name: name,
+                    color: color,
+                    data: this.serieData[name]
+                }
+            } else {
+                point.push(time);
+                point.push(pointValue);
+                this.serieData[name].push(point);
+            }
+        } else if (name.startsWith("macd")) {
             //macd
-            let macdGroupKey = key.replace(/[A-Za-z]/g, ' ').replace('_', ' ') + this.getPriceType(key.charAt(1))
-            if (this.macdGroup[macdGroupKey] === undefined) {
-                this.macdGroup[macdGroupKey] = this.axisIndex++;
+            if (this.macdGroup[group] === undefined) {
+                this.macdGroup[group] = this.axisIndex++;
             }
-            if (key.replace(/[0-9]/g, '').charAt(2) === "h") {
-                if (this.serieMap[key] === undefined) {
+            if (name.endsWith("histogram")) {
+                if (this.serieMap[name] === undefined) {
                     color = "#03ff03";
-                    this.serieData[key] = [];
-                    this.serieMap[key] = {
+                    this.serieData[name] = [];
+                    this.serieMap[name] = {
                         yAxis: this.axisIndex,
-                        name: "macd " + macdGroupKey,
+                        name: "macd " + group,
                         color: color,
                         type: 'column',
-                        data: this.serieData[key]
+                        data: this.serieData[name]
                     }
                 } else {
                     let color = "#00ff00";
@@ -205,61 +259,42 @@ class StockChart extends Component {
                         y: pointValue,
                         color: color
                     }
-                    this.serieData[key].push(point);
+                    this.serieData[name].push(point);
                 }
             } else {
-                if (key.replace(/[0-9]/g, '').charAt(2) === "_") {
-                    name = "macd " + macdGroupKey + " normalised";
+                if (name.endsWith("slow")) {
                     color = "#937d00";
                 } else {
-                    name = "macd " + macdGroupKey + " signal";
-                    color = "#00c1ee";
+                    color = "#a1c4cc";
                 }
-                if (this.serieMap[key] === undefined) {
+                if (this.serieMap[name] === undefined) {
 
-                    this.serieData[key] = [];
-                    this.serieMap[key] = {
+                    this.serieData[name] = [];
+                    this.serieMap[name] = {
                         yAxis: this.axisIndex,
                         name: name,
                         color: color,
-                        data: this.serieData[key]
+                        data: this.serieData[name]
                     }
                 } else {
                     point.push(time);
                     point.push(pointValue);
-                    this.serieData[key].push(point);
+                    this.serieData[name].push(point);
                 }
             }
         }
     }
 
 
-    parsePointOf(array, from, to) {
+    parsePointOf(array, metaOhlc) {
         let point = [];
-        if (to > array.length) {
-            to = array.length;
-        }
-        for (let i = from; i <= to; i++) {
-            point.push(array[i]);
-        }
-        return point;
-    }
+        point.push(array[0]);//always time
+        point.push(array[metaOhlc.open.index]);
+        point.push(array[metaOhlc.high.index]);
+        point.push(array[metaOhlc.low.index]);
+        point.push(array[metaOhlc.close.index]);
 
-    getPriceType(char) {
-        let name = "";
-        if (char === "c") {
-            name += " close";
-        }
-        if (char === "o") {
-            name += " open";
-        }
-        if (char === "h") {
-            name += " high";
-        }
-        if (char === "l") {
-            name += " low";
-        }
-        return name;
+        return point;
     }
 
 
@@ -268,12 +303,13 @@ class StockChart extends Component {
         let url = "/api/getOHLC";
         if (this.last !== undefined) {
             url += "?last=" + this.last;
-            url += "&limit=50000";
+            url += "&limit=5000";
         }
 
         fetch(url)
             .then(response => response.json())
             .then(result => {
+
 
                 if (this.last === result.last) {
                     this.last = result.last;
@@ -281,25 +317,34 @@ class StockChart extends Component {
                     if (this.firstBatch === true) {
                         console.log("first batch all done, launch the timer")
                         clearInterval(this.timer);
-
-                        this.timer = setInterval(() => this.fetchData(), 1000);
-
+                        this.timer = setInterval(() => this.fetchData(), 100);
+                        this.firstBatch = false;
                     }
-                    this.firstBatch = false;
+
                 } else {
 
-
+                    console.log("last result is changed, new data to parse");
                     this.last = result.last;
+                    this.first = result.first;
+                    let metaIndicator = result.metaIndicator;
+                    let metaOhlc = result.metaOhlc;
                     if (result.OHLC !== undefined) {
                         let OHLC = result.OHLC;
                         for (let i = 0; i < OHLC.length; i++) {
+                            let time = OHLC[i][0];
+                            this.data.push(this.parsePointOf(OHLC[i], metaOhlc));
+                            if (metaOhlc.vwap !== undefined) {
+                                this.parseIndicator(OHLC[i][metaOhlc.vwap.index], time, "vwap", "ohlc");
+                            }
+                            if (metaOhlc.volume !== undefined) {
+                                this.parseIndicator(OHLC[i][metaOhlc.volume.index], time, "volume", "volume");
+                            }
 
-                            this.data.push(this.parsePointOf(OHLC[i], 0, 4));
-                            if (OHLC[i].length === 6) {
-                                let time = OHLC[i][0];
-                                let indicators = OHLC[i][5];
+                            if (metaOhlc.indicators !== undefined) {
+
+                                let indicators = OHLC[i][metaOhlc.indicators.index];
                                 for (let key in indicators) {
-                                    this.parseIndicator(key, indicators[key], time);
+                                    this.parseIndicator(indicators[key], time, metaIndicator[key].name, metaIndicator[key].group);
                                 }
                             }
                         }
@@ -307,18 +352,16 @@ class StockChart extends Component {
                     } else {
                         console.error("meta.OHLC undefined");
                     }
-                    /*
 
-                    26m12c9
-                    26m12c9h
-                    26m12c9s
-                    e12c
-                    e200c
-                    e26c
-                    s200c
-                     */
-
-
+                    //
+                    //this.maxDate = this.first;
+                    if (this.last - this.first < 1000 * 60 * 60 * 8) {
+                        this.minDate = this.last - 1000 * 60 * 60 * 8;
+                    } else {
+                        this.minDate = this.first;
+                    }
+                    this.maxDate = this.last;
+                    console.log("chunk periode : " + new Date(this.first) + " " + new Date(this.last));
                     this.updateChart();
                     if (this.synchronizedYet === false && this.firstBatch === false) {
                         //pace down every minute
