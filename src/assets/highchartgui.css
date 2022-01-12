@@ -180,7 +180,8 @@
     height: 40px;
     cursor: pointer;
     position: relative;
-    background-color: #000000;
+    background-color: #ad1;
+    color: #e0e0e0;
 
 }
 
@@ -189,7 +190,7 @@
 }
 
 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li.highcharts-disabled-btn > .highcharts-menu-item-btn {
-    opacity: 0.5;
+    opacity: 0.1;
 }
 
 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li.highcharts-disabled-btn.highcharts-active {
@@ -197,7 +198,8 @@
 }
 
 .highcharts-bindings-wrapper .highcharts-stocktools-toolbar li.highcharts-disabled-btn .highcharts-menu-item-btn:hover {
-    background-color: transparent;
+    /*background-color: transparent;*/
+    color: #ffffff;
 }
 
 .highcharts-bindings-wrapper li > span.highcharts-menu-item-btn {
