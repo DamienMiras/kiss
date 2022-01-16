@@ -264,7 +264,7 @@ div.highcharts-tooltip {
 }
 
 .highcharts-series-inactive {
-    opacity: 0.2;
+    opacity: 0.7;
     transition: opacity 50ms;
     /* quick in */
 }
@@ -843,18 +843,19 @@ input.highcharts-range-selector {
 }
 
 .highcharts-flags-series .highcharts-point .highcharts-label-box {
-    stroke: #575757;
-    fill: #2a2a2b;
+    /*   stroke: #575757;*/
+    /*    fill: #2a2a2b;*/
     transition: fill 250ms;
 }
 
 .highcharts-flags-series .highcharts-point-hover .highcharts-label-box {
     stroke: #fff;
-    fill: #707073;
+    fill: #ffffff;
 }
 
 .highcharts-flags-series .highcharts-point text {
-    fill: #fff;
+    /* text in the flags*/
+    fill: rgba(0, 0, 0, 0);
     font-size: 0.9em;
     font-weight: bold;
 }
