@@ -28,7 +28,6 @@ class StockChart extends Component {
         this.axisIndex = 2;
         this.data = [];
         this.macdGroup = {};
-        //this.watchUpdateSeries = new Watch("update series");
         this.pauseLoading = false;
         this.pauseMoveWhileLoading = false;
 
@@ -40,12 +39,14 @@ class StockChart extends Component {
         this.maxDate = undefined;
         this.seriesMinDate = undefined;
         this.seriesMaxDate = undefined;
+        this.watchUpdateSeries = new Watch("update series", "#7FFFFF");
+        this.watchParseData = new Watch("parse data", "#FF7FFF");
 
         this.state = {
             chartOptions: {
                 navigator: {},
                 chart: {
-                    height: 1500,
+                    height: 1000,
                 },
                 title: {
                     text: 'kraken XBTUSD 1m'
@@ -167,6 +168,28 @@ class StockChart extends Component {
 
     }
 
+    updateSeries() {
+        let options = {
+            chartOptions: {
+
+                series: [
+                    {
+                        yAxis: 0,
+                        type: 'heikinashi',
+                        //type: 'candlestick',
+                        name: 'Heikin Ashi',
+                        data: this.data,
+                        id: 'hikinashiId'
+                    }
+                ]
+            }
+        }
+
+        for (let key in this.serieMap) {
+            options.chartOptions.series.push(this.serieMap[key]);
+        }
+    }
+
     updateChart() {
 
 
@@ -201,9 +224,10 @@ class StockChart extends Component {
         }
         //  console.log(options);
 
-        let watchUpdateSeries = new Watch("update series").start();
+
+        this.watchUpdateSeries.start();
         this.setState(options);
-        watchUpdateSeries.stop().log();
+        this.watchUpdateSeries.stop().log();
 
     }
 
@@ -281,7 +305,157 @@ class StockChart extends Component {
         }
     }
 
-    parseIndicator(pointValue, time, name, group) {
+    parseSeries(name, group, type) {
+        //TODO replace the name startwith by the type, involve server compatibility
+        if (name.startsWith("ema")) {
+            //ema
+            if (this.serieMap[name] === undefined) {
+                this.serieData[name] = [];
+                this.serieMap[name] = {
+                    yAxis: 0,
+                    name: name,
+                    color: "#c2ff00",
+                    data: this.serieData[name]
+                }
+            }
+
+        } else if (name.startsWith("vwap")) {
+            //sma
+            if (this.serieMap[name] === undefined) {
+                this.serieData[name] = [];
+                this.serieMap[name] = {
+                    yAxis: 0,
+                    name: name,
+                    color: "#00ffff",
+                    data: this.serieData[name]
+                }
+            }
+
+        } else if (name.startsWith("volume")) {
+            //sma
+            if (this.serieMap[name] === undefined) {
+                this.serieData[name] = [];
+                this.serieMap[name] = {
+                    yAxis: 5,
+                    name: name,
+                    type: 'column',
+                    color: "#79ff37",
+                    data: this.serieData[name]
+                }
+            }
+
+        } else if (name.startsWith("sma")) {
+            //sma
+            if (this.serieMap[name] === undefined) {
+                this.serieData[name] = [];
+                this.serieMap[name] = {
+                    yAxis: 0,
+                    name: name,
+                    color: "#7b66fc",
+                    data: this.serieData[name]
+                }
+            }
+
+        } else if (type === "orders") {
+            let usdBalance = group + " UsdBalance";
+            let btcBalance = group + " btcBalance";
+            let buyAndSellLine = group + "buy And Sell Line";
+            if (this.serieMap[usdBalance] === undefined) {
+                this.serieData[usdBalance] = [];
+                this.serieMap[usdBalance] = {
+                    yAxis: 1,
+                    name: group + " USD balance",
+                    color: "#00880a",
+                    data: this.serieData[usdBalance]
+                }
+            }
+
+            if (this.serieMap[btcBalance] === undefined) {
+                this.serieData[btcBalance] = [];
+                this.serieMap[btcBalance] = {
+                    yAxis: 2,
+                    name: group + "BTC balance",
+                    color: "#bb9004",
+                    data: this.serieData[btcBalance]
+                }
+            }
+
+            if (this.serieMap[buyAndSellLine] === undefined) {
+                this.serieData[buyAndSellLine] = [];
+                this.serieMap[buyAndSellLine] = {
+                    yAxis: 0,
+                    id: "ordersLine",
+                    name: group + "hidden placement serie",
+                    color: "rgba(253,253,253,1)",
+                    data: this.serieData[buyAndSellLine]
+                }
+            }
+
+
+            /*
+                        let nameOfbuySell = group+ "A";
+                        if (this.serieMap[nameOfbuySell] === undefined) {
+                            this.serieData[nameOfbuySell] = [];
+                            this.serieMap[nameOfbuySell] = {
+                                type: 'flags',
+                                shape: 'circlepin',
+                                width: 8,
+                                height: 8,
+                                y: -8,
+                                x: -8,
+                                onSeries: 'ordersLine',
+                                color: "#a0ff31",
+                                fillColor: "#a0ff31",
+                                grouping: true,
+                                lineColor: "rgba(3,3,3,0)",
+                                states: {
+                                    inactive: {
+                                        enabled: false,
+                                        opacity: 1
+                                    }
+                                },
+                                data: this.serieData[nameOfbuySell]
+                            }
+                        }
+                        */
+
+
+        } else if (name.startsWith("macd")) {
+            //macd
+            let color = "#00ff00";
+            if (this.macdGroup[group] === undefined) {
+                this.macdGroup[group] = this.axisIndex++;
+            }
+            if (name.endsWith("histogram")) {
+                if (this.serieMap[name] === undefined) {
+                    this.serieData[name] = [];
+                    this.serieMap[name] = {
+                        yAxis: this.axisIndex,
+                        name: "macd " + group,
+                        color: color,
+                        type: 'column',
+                        data: this.serieData[name]
+                    }
+                }
+            } else {
+
+                if (this.serieMap[name] === undefined) {
+
+                    this.serieData[name] = [];
+                    this.serieMap[name] = {
+                        yAxis: this.axisIndex,
+                        name: name,
+                        color: color,
+                        data: this.serieData[name]
+                    }
+                }
+
+
+            }
+        }
+    }
+
+    parseIndicator(pointValue, time, name, group, type) {
         let color = "#c2ff00";
         let point = [];
 
@@ -354,62 +528,35 @@ class StockChart extends Component {
             point.push(pointValue);
             this.serieData[name].push(point);
 
-        } else if (group.startsWith("orders")) {
+        } else if (type === "order") {
+
+            let usdBalance = group + " UsdBalance";
+            let btcBalance = group + " btcBalance";
+            let buyAndSellLine = group + "buy And Sell Line";
 
             let quantity = parseFloat(pointValue.quantity);
             let price = parseFloat(pointValue.price);
-            if (this.serieMap.usdBalance === undefined) {
 
-                this.serieData.usdBalance = [];
-                this.serieMap.usdBalance = {
-                    yAxis: 1,
-                    name: "USD balance",
-                    color: "#00880a",
-                    data: this.serieData.usdBalance
-                }
-            }
             if (pointValue.type === "s") {
                 point = [];
                 point.push(time);
                 point.push(quantity);
-                this.serieData.usdBalance.push(point);
+                this.serieData[usdBalance].push(point);
             }
 
-            if (this.serieMap.btcBalance === undefined) {
 
-                this.serieData.btcBalance = [];
-                this.serieMap.btcBalance = {
-                    yAxis: 2,
-                    name: "BTC balance",
-                    color: "#bb9004",
-                    data: this.serieData.btcBalance
-                }
-            }
             if (pointValue.type === "b") {
                 point = [];
                 point.push(time);
                 point.push(quantity);
-                this.serieData.btcBalance.push(point);
+                this.serieData[btcBalance].push(point);
             }
 
 
-            let color = "rgba(253,253,253,1)";
-            if (this.serieMap.bs === undefined) {
-
-                this.serieData.bs = [];
-                this.serieMap.bs = {
-                    yAxis: 0,
-                    id: "ordersLine",
-                    name: "hidden placement serie",
-
-                    color: color,
-                    data: this.serieData.bs
-                }
-            }
             point = [];
             point.push(time);
             point.push(price);
-            this.serieData.bs.push(point);
+            this.serieData[buyAndSellLine].push(point);
             /*
                         let nameOfbuySell = group+ "A";
                         if (this.serieMap[nameOfbuySell] === undefined) {
@@ -529,6 +676,43 @@ class StockChart extends Component {
 
         let metaIndicator = result.metaIndicator;
         let metaOhlc = result.metaOhlc;
+        if (metaIndicator !== undefined) {
+            let foundOrders = false;
+
+            let orders = {};
+            for (let key in metaIndicator) {
+                /**
+                 * group "bot1orders" or "bot2orders"
+                 * type  "order"
+                 * name  "quantity"
+                 * ror each group we create an order indexed by group value
+                 */
+                let group = metaIndicator[key].group;
+                let type = metaIndicator[key].type;
+                let name = metaIndicator[key].name;
+                if (name !== undefined && group !== undefined && type !== undefined && type === "order") {
+                    if (orders.group === undefined) {
+                        orders[group] = {name: "", group: ""};
+                    }
+                    orders[group].name = name;
+                    orders[group].group = group;
+                    foundOrders = true;
+
+                } else {
+                    this.parseSeries(name, group, type);
+                }
+            }
+            if (foundOrders === true) {
+                for (let key in orders) {
+                    let order = orders[key];
+
+                    this.parseSeries("", order.group, "orders");
+                }
+            }
+        }
+        this.updateSeries();
+        console.log(this.serieMap);
+
 
         if (result.OHLC !== undefined) {
             let OHLC = result.OHLC;
@@ -566,7 +750,8 @@ class StockChart extends Component {
                         }
                     }
                     if (foundOrders === true) {
-                        this.parseIndicator(order, time, "", "orders");
+                        //FIXME order prices are not equals to the time price or shifted(linked to BigDecimal prices)
+                        this.parseIndicator(order, time, "", "orders", "order");
                     }
                 }
 
@@ -582,9 +767,7 @@ class StockChart extends Component {
                     //sthis.maxDate = this.first + 1000 * 60 * 60 * 2;
                 }
             }
-            // this.watchUpdateSeries = new Watch("update series").start();
             this.updateChart();
-            //        this.watchUpdateSeries.stop().log();
 
         } else {
             console.error("meta.OHLC undefined");
@@ -592,43 +775,6 @@ class StockChart extends Component {
 
     }
 
-    playPauseLoading() {
-        this.pauseLoading = !this.pauseLoading;
-        if (this.pauseLoading === true) {
-            console.log("pause loading");
-            clearInterval(this.timer);
-        } else {
-            console.log("play loading");
-            this.fetchData();
-        }
-
-    }
-
-    moveNav() {
-        console.log(this);
-        let byIncrement = 1000 * 60 * 60 * 1;
-        this.minDate = this.minDate + byIncrement;
-        this.maxDate = this.maxDate + byIncrement;
-        if (this.maxDate > this.seriesMaxDate) {
-            this.maxDate = this.seriesMaxDate;
-            this.minDate = this.seriesMaxDate - byIncrement;
-            clearInterval(this.timerNavigator);
-        }
-        console.log(this.minDate + " " + this.maxDate);
-        this.updateNavigator();
-    }
-
-    move() {
-
-        console.log("move");
-        this.minDate = this.seriesMinDate;
-        this.maxDate = this.seriesMinDate + 1000 * 60 * 60 * 8;
-        console.log(this.seriesMinDate + " " + this.minDate + " " + this.maxDate);
-        this.pauseMoveWhileLoading = true;
-        clearInterval(this.timerNavigator);
-        this.timerNavigator = setInterval(() => this.moveNav(), 1000);
-
-    }
 
     fetchData() {
         if (this.pauseLoading === true) {
@@ -670,7 +816,9 @@ class StockChart extends Component {
                 } else if (this.last === result.last) {
 
                     if (this.firstBatch === true) {
-                        console.log("first batch all done, launch the timer")
+                        console.log("first batch all done, launch the timer");
+                        this.watchParseData.resetTotal();
+                        this.watchUpdateSeries.resetTotal()
                         clearInterval(this.timer);
                         this.timer = setInterval(() => this.fetchData(), 1000 * 60);
                         this.firstBatch = false;
@@ -683,6 +831,44 @@ class StockChart extends Component {
                 clearInterval(this.timer);
                 this.timer = setInterval(() => this.fetchData(), 3000);
             });
+    }
+
+    playPauseLoading() {
+        this.pauseLoading = !this.pauseLoading;
+        if (this.pauseLoading === true) {
+            console.log("pause loading");
+            clearInterval(this.timer);
+        } else {
+            console.log("play loading");
+            this.fetchData();
+        }
+
+    }
+
+    moveNav() {
+        console.log(this);
+        let byIncrement = 1000 * 60 * 60 * 1;
+        this.minDate = this.minDate + byIncrement;
+        this.maxDate = this.maxDate + byIncrement;
+        if (this.maxDate > this.seriesMaxDate) {
+            this.maxDate = this.seriesMaxDate;
+            this.minDate = this.seriesMaxDate - byIncrement;
+            clearInterval(this.timerNavigator);
+        }
+        console.log(this.minDate + " " + this.maxDate);
+        this.updateNavigator();
+    }
+
+    move() {
+
+        console.log("move");
+        this.minDate = this.seriesMinDate;
+        this.maxDate = this.seriesMinDate + 1000 * 60 * 60 * 8;
+        console.log(this.seriesMinDate + " " + this.minDate + " " + this.maxDate);
+        this.pauseMoveWhileLoading = true;
+        clearInterval(this.timerNavigator);
+        this.timerNavigator = setInterval(() => this.moveNav(), 1000);
+
     }
 
     componentDidMount() {
