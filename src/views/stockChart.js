@@ -10,6 +10,7 @@ import AnnotationsAdvanced from "highcharts/modules/annotations-advanced.src.js"
 import PriceIndicator from "highcharts/modules/price-indicator.src.js";
 import FullScreen from "highcharts/modules/full-screen.src.js";
 import StockTools from "highcharts/modules/stock-tools.src.js";
+import Watch from "../lib/watch.js";
 
 StockTools(Highcharts);
 Indicators(Highcharts);
@@ -27,13 +28,18 @@ class StockChart extends Component {
         this.axisIndex = 2;
         this.data = [];
         this.macdGroup = {};
+        //this.watchUpdateSeries = new Watch("update series");
+        this.pauseLoading = false;
+        this.pauseMoveWhileLoading = false;
 
         this.serieMap = {};
         this.serieData = {};
-        this.last = undefined;
+        this.last = 0;
         this.first = undefined;
         this.minDate = undefined;
         this.maxDate = undefined;
+        this.seriesMinDate = undefined;
+        this.seriesMaxDate = undefined;
 
         this.state = {
             chartOptions: {
@@ -156,8 +162,9 @@ class StockChart extends Component {
                 }
             }
         }
-
         this.setState(options);
+
+
     }
 
     updateChart() {
@@ -194,9 +201,13 @@ class StockChart extends Component {
         }
         //  console.log(options);
 
-
+        let watchUpdateSeries = new Watch("update series").start();
         this.setState(options);
+        watchUpdateSeries.stop().log();
 
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
 
     }
 
@@ -497,13 +508,28 @@ class StockChart extends Component {
 
     parseData(result) {
 
-        this.last = result.last;
         this.first = result.first;
+        this.last = result.last;
+        if (this.seriesMinDate === undefined) {
+            this.seriesMinDate = this.first;
+        }
+        if (this.seriesMaxDate === undefined) {
+            this.seriesMaxDate = this.last;
+        }
+        if (this.seriesMaxDate < this.last) {
+            this.seriesMaxDate = this.last;
+        }
+        if (this.minDate === undefined) {
+            this.minDate = this.first;
+        }
+
+        if (this.maxDate === undefined) {
+            this.maxDate = this.last;
+        }
+
         let metaIndicator = result.metaIndicator;
         let metaOhlc = result.metaOhlc;
-        /*
 
-        */
         if (result.OHLC !== undefined) {
             let OHLC = result.OHLC;
             for (let i = 0; i < OHLC.length; i++) {
@@ -534,13 +560,7 @@ class StockChart extends Component {
                         if (group !== undefined && group === "orders") {
                             foundOrders = true;
                             order[metaIndicator[key].key] = metaIndicatorValues[key];
-                            if (metaIndicator[key].key === "price" && metaIndicatorValues[key] !== OHLC[i][1]) {
-                                console.log("price different");
-                                console.log(OHLC[i]);
-                                console.log(metaIndicator[key]);
-                                console.log(metaIndicator);
-                                debugger;
-                            }
+
                         } else {
                             this.parseIndicator(metaIndicatorValues[key], time, metaIndicator[key].name, group);
                         }
@@ -551,17 +571,20 @@ class StockChart extends Component {
                 }
 
             }
-
-            if (this.last - this.first < 1000 * 60 * 60 * 8) {
-                this.minDate = this.last - 1000 * 60 * 60 * 8;
-                this.maxDate = this.last;
-            } else {
-                this.minDate = this.first - 1000 * 60 * 60 * 48;
-                this.maxDate = this.last - 1000 * 60 * 60 * 48;
-                //this.minDate = this.first;
-                //sthis.maxDate = this.first + 1000 * 60 * 60 * 2;
+            if (this.pauseMoveWhileLoading === false) {
+                if ((this.last - this.first) < 1000 * 60 * 60 * 8) {
+                    this.minDate = this.last - 1000 * 60 * 60 * 8;
+                    this.maxDate = this.last;
+                } else {
+                    this.minDate = this.first - 1000 * 60 * 60 * 48;
+                    this.maxDate = this.last - 1000 * 60 * 60 * 48;
+                    //this.minDate = this.first;
+                    //sthis.maxDate = this.first + 1000 * 60 * 60 * 2;
+                }
             }
+            // this.watchUpdateSeries = new Watch("update series").start();
             this.updateChart();
+            //        this.watchUpdateSeries.stop().log();
 
         } else {
             console.error("meta.OHLC undefined");
@@ -569,7 +592,48 @@ class StockChart extends Component {
 
     }
 
+    playPauseLoading() {
+        this.pauseLoading = !this.pauseLoading;
+        if (this.pauseLoading === true) {
+            console.log("pause loading");
+            clearInterval(this.timer);
+        } else {
+            console.log("play loading");
+            this.fetchData();
+        }
+
+    }
+
+    moveNav() {
+        console.log(this);
+        let byIncrement = 1000 * 60 * 60 * 1;
+        this.minDate = this.minDate + byIncrement;
+        this.maxDate = this.maxDate + byIncrement;
+        if (this.maxDate > this.seriesMaxDate) {
+            this.maxDate = this.seriesMaxDate;
+            this.minDate = this.seriesMaxDate - byIncrement;
+            clearInterval(this.timerNavigator);
+        }
+        console.log(this.minDate + " " + this.maxDate);
+        this.updateNavigator();
+    }
+
+    move() {
+
+        console.log("move");
+        this.minDate = this.seriesMinDate;
+        this.maxDate = this.seriesMinDate + 1000 * 60 * 60 * 8;
+        console.log(this.seriesMinDate + " " + this.minDate + " " + this.maxDate);
+        this.pauseMoveWhileLoading = true;
+        clearInterval(this.timerNavigator);
+        this.timerNavigator = setInterval(() => this.moveNav(), 1000);
+
+    }
+
     fetchData() {
+        if (this.pauseLoading === true) {
+            return;
+        }
 
         let url = "/api/getOHLC";
         if (this.last !== undefined) {
@@ -581,11 +645,16 @@ class StockChart extends Component {
         fetch(url)
             .then(response => response.json())
             .then(result => {
+                if (this.pauseLoading === true) {
+                    return;
+                }
+
 
                 if (result.last > this.last) {
-                    console.log("last result is changed, new data to parse");
+                    console.log("last result has changed, new data to parse");
                     this.parseData(result);
 
+                    /*
                     if (this.synchronizedYet === false && this.firstBatch === false) {
                         //pace down every minute
                         console.log("request synchronized pacedown the timer")
@@ -593,20 +662,17 @@ class StockChart extends Component {
                         this.timer = setInterval(() => this.fetchData(), 1000);
                         this.synchronizedYet = true;
                     }
-
+*/
                     if (this.firstBatch === true) {
                         //dont use timer , because there is no garantie that the answer comes in the right order
-                        //this.fetchData();
+                        this.fetchData();
                     }
-                }
-
-                if (this.last === result.last) {
-                    this.last = result.last;
+                } else if (this.last === result.last) {
 
                     if (this.firstBatch === true) {
                         console.log("first batch all done, launch the timer")
                         clearInterval(this.timer);
-                        this.timer = setInterval(() => this.fetchData(), 100);
+                        this.timer = setInterval(() => this.fetchData(), 1000 * 60);
                         this.firstBatch = false;
                     }
                 }
@@ -632,8 +698,7 @@ class StockChart extends Component {
     }
 
     componentWillUnmount() {
-
-
+        clearInterval(this.timerNavigator);
         clearInterval(this.timer);
     }
 
@@ -650,7 +715,10 @@ class StockChart extends Component {
                     highcharts={Highcharts}
                     constructorType={"stockChart"}
                 />
+                <button onClick={this.move.bind(this)}>move navigator</button>
+                <button onClick={this.playPauseLoading.bind(this)}>playPause loading</button>
             </div>
+
 
         )
     }
