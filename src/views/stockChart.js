@@ -46,7 +46,7 @@ class StockChart extends Component {
             chartOptions: {
                 navigator: {},
                 chart: {
-                    height: 1000,
+                    height: 1300,
                 },
                 title: {
                     text: 'kraken XBTUSD 1m'
@@ -171,7 +171,6 @@ class StockChart extends Component {
     updateSeries() {
         let options = {
             chartOptions: {
-
                 series: [
                     {
                         yAxis: 0,
@@ -212,8 +211,8 @@ class StockChart extends Component {
                         type: 'heikinashi',
                         //type: 'candlestick',
                         name: 'Heikin Ashi',
-                        data: this.data,
-                        id: 'hikinashiId'
+                        id: 'hikinashiId',
+                        data: this.data
                     }
                 ]
             }
@@ -432,13 +431,18 @@ class StockChart extends Component {
                     this.serieMap[name] = {
                         yAxis: this.axisIndex,
                         name: "macd " + group,
-                        color: color,
+                        color: "#00ff00",
                         type: 'column',
                         data: this.serieData[name]
                     }
                 }
             } else {
-
+                //the other lines
+                if (name.endsWith("slow")) {
+                    color = "#937d00";
+                } else {
+                    color = "#a1c4cc";
+                }
                 if (this.serieMap[name] === undefined) {
 
                     this.serieData[name] = [];
@@ -449,80 +453,35 @@ class StockChart extends Component {
                         data: this.serieData[name]
                     }
                 }
-
-
             }
         }
     }
 
     parseIndicator(pointValue, time, name, group, type) {
-        let color = "#c2ff00";
         let point = [];
-
         if (name.startsWith("ema")) {
-            //ema
-            if (this.serieMap[name] === undefined) {
-                color = "#c2ff00";
-                this.serieData[name] = [];
-                this.serieMap[name] = {
-                    yAxis: 0,
-                    name: name,
-                    color: color,
-                    data: this.serieData[name]
-                }
-            }
+
             point = [];
             point.push(time);
             point.push(pointValue);
             this.serieData[name].push(point);
 
         } else if (name.startsWith("vwap")) {
-            //sma
-            if (this.serieMap[name] === undefined) {
-                color = "#00ffff";
-                this.serieData[name] = [];
-                this.serieMap[name] = {
-                    yAxis: 0,
-                    name: name,
-                    color: color,
-                    data: this.serieData[name]
-                }
-            }
+
             point = [];
             point.push(time);
             point.push(pointValue);
             this.serieData[name].push(point);
 
         } else if (name.startsWith("volume")) {
-            //sma
-            if (this.serieMap[name] === undefined) {
-                color = "#79ff37";
-                this.serieData[name] = [];
-                this.serieMap[name] = {
-                    yAxis: 5,
-                    name: name,
-                    type: 'column',
-                    color: color,
-                    data: this.serieData[name]
-                }
-            }
+
             point = [];
             point.push(time);
             point.push(pointValue);
             this.serieData[name].push(point);
 
         } else if (name.startsWith("sma")) {
-            //sma
-            if (this.serieMap[name] === undefined) {
-                color = "#7b66fc";
-                this.serieData[name] = [];
-                this.serieMap[name] = {
-                    yAxis: 0,
-                    name: name,
-                    color: color,
-                    data: this.serieData[name]
-                }
-            }
+
             point = [];
             point.push(time);
             point.push(pointValue);
@@ -543,7 +502,6 @@ class StockChart extends Component {
                 point.push(quantity);
                 this.serieData[usdBalance].push(point);
             }
-
 
             if (pointValue.type === "b") {
                 point = [];
@@ -596,17 +554,6 @@ class StockChart extends Component {
                 this.macdGroup[group] = this.axisIndex++;
             }
             if (name.endsWith("histogram")) {
-                if (this.serieMap[name] === undefined) {
-                    this.serieData[name] = [];
-                    this.serieMap[name] = {
-                        yAxis: this.axisIndex,
-                        name: "macd " + group,
-                        color: color,
-                        type: 'column',
-                        data: this.serieData[name]
-                    }
-                }
-
                 if (pointValue < 0) {
                     color = "#fd007f";
                 }
@@ -618,21 +565,7 @@ class StockChart extends Component {
                 this.serieData[name].push(point);
 
             } else {
-                if (name.endsWith("slow")) {
-                    color = "#937d00";
-                } else {
-                    color = "#a1c4cc";
-                }
-                if (this.serieMap[name] === undefined) {
-
-                    this.serieData[name] = [];
-                    this.serieMap[name] = {
-                        yAxis: this.axisIndex,
-                        name: name,
-                        color: color,
-                        data: this.serieData[name]
-                    }
-                }
+                //handles the slow line AND the signal line
                 point.push(time);
                 point.push(pointValue);
                 this.serieData[name].push(point);
@@ -676,8 +609,15 @@ class StockChart extends Component {
 
         let metaIndicator = result.metaIndicator;
         let metaOhlc = result.metaOhlc;
-        if (metaIndicator !== undefined) {
+        if (metaIndicator !== undefined && metaOhlc !== undefined) {
             let foundOrders = false;
+
+            if (metaOhlc.vwap !== undefined) {
+                this.parseSeries("vwap", "ohlc");
+            }
+            if (metaOhlc.volume !== undefined) {
+                this.parseSeries("volume", "volume");
+            }
 
             let orders = {};
             for (let key in metaIndicator) {
