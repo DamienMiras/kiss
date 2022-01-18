@@ -25,8 +25,8 @@ class StockChart extends Component {
     constructor(props) {
         super(props);
 
+        //TODO automate chart indexing
         this.axisIndex = 2;
-        this.data = [];
         this.macdGroup = {};
         this.pauseLoading = false;
         this.pauseMoveWhileLoading = false;
@@ -43,6 +43,7 @@ class StockChart extends Component {
         this.watchParseData = new Watch("parse data", "#FF7FFF");
 
         this.state = {
+            serieData: {},
             chartOptions: {
                 navigator: {},
                 chart: {
@@ -171,21 +172,14 @@ class StockChart extends Component {
     updateSeries() {
         let options = {
             chartOptions: {
-                series: [
-                    {
-                        yAxis: 0,
-                        type: 'heikinashi',
-                        //type: 'candlestick',
-                        name: 'Heikin Ashi',
-                        data: this.data,
-                        id: 'hikinashiId'
-                    }
-                ]
+                series: []
             }
         }
 
+
         for (let key in this.serieMap) {
             options.chartOptions.series.push(this.serieMap[key]);
+
         }
     }
 
@@ -205,21 +199,15 @@ class StockChart extends Component {
                     min: this.minDate,
                     max: this.maxDate,
                 },
-                series: [
-                    {
-                        yAxis: 0,
-                        type: 'heikinashi',
-                        //type: 'candlestick',
-                        name: 'Heikin Ashi',
-                        id: 'hikinashiId',
-                        data: this.data
-                    }
-                ]
+                series: []
             }
         }
+
         //console.log(this.serieMap);
+        let i = 0;
         for (let key in this.serieMap) {
             options.chartOptions.series.push(this.serieMap[key]);
+            //options.chartOptions.series.push({data:this.serieMap[key].data});
         }
         //  console.log(options);
 
@@ -234,78 +222,25 @@ class StockChart extends Component {
 
     }
 
-    parseOrder(order) {
-        let color = "rgba(253,253,253,1)";
-        let name = "buy and sell orders";
-
-        let point = [];
-        if (this.serieMap.bs === undefined) {
-
-            this.serieData.bs = [];
-            this.serieMap.bs = {
-                yAxis: 0,
-                id: "ordersLine",
-                name: "hiiden placement serie",
-                color: color,
-                data: this.serieData.bs
-            }
-        } else {
-            point.push(order.t);
-            point.push(order.p);
-            this.serieData.bs.push(point);
-        }
-
-        name = "orders";
-        if (this.serieMap[name] === undefined) {
-            this.serieData[name] = [];
-            this.serieMap[name] = {
-                type: 'flags',
-                shape: 'circlepin',
-                width: 8,
-                height: 8,
-                y: -8,
-                x: -8,
-                onSeries: 'ordersLine',
-                color: "#a0ff31",
-                fillColor: "#a0ff31",
-                grouping: true,
-                lineColor: "rgba(3,3,3,0)",
-                states: {
-                    inactive: {
-                        enabled: false,
-                        opacity: 1
-                    }
-                },
-                data: this.serieData[name]
-            }
-        } else {
-            let color = "rgba(253,253,253,0)";
-            let fillColor = "#a0ff31";
-            let title = "?";
-            if (order.ty === "buy") {
-                color = "#a0ff31";
-                fillColor = "#a0ff31";
-                title = "B";
-            }
-            if (order.ty === "sell") {
-                color = "#ff0080";
-                fillColor = "#ff0080";
-                title = "S";
-            }
-            let orderPoint = {
-                x: order.t,
-                selected: true,
-                title: title,
-                text: order.ty + " " + order.p,
-                color: color,
-                fillColor: fillColor
-            }
-            this.serieData[name].push(orderPoint)
-        }
-    }
 
     parseSeries(name, group, type) {
         //TODO replace the name startwith by the type, involve server compatibility
+        if (type === "ohlc") {
+
+            if (this.serieMap[type] === undefined) {
+                this.serieData[type] = [];
+                this.serieMap[type] = {
+                    yAxis: 0,
+                    type: 'heikinashi',
+                    //type: 'candlestick',
+                    name: name,
+                    id: 'hikinashiId',
+                    data: this.serieData[type]
+                }
+            }
+
+        }
+
         if (name.startsWith("ema")) {
             //ema
             if (this.serieMap[name] === undefined) {
@@ -359,6 +294,7 @@ class StockChart extends Component {
             let usdBalance = group + " UsdBalance";
             let btcBalance = group + " btcBalance";
             let buyAndSellLine = group + "buy And Sell Line";
+            let buyAndSellFlags = group + "buy And Sell flags";
             if (this.serieMap[usdBalance] === undefined) {
                 this.serieData[usdBalance] = [];
                 this.serieMap[usdBalance] = {
@@ -391,32 +327,23 @@ class StockChart extends Component {
             }
 
 
-            /*
-                        let nameOfbuySell = group+ "A";
-                        if (this.serieMap[nameOfbuySell] === undefined) {
-                            this.serieData[nameOfbuySell] = [];
-                            this.serieMap[nameOfbuySell] = {
-                                type: 'flags',
-                                shape: 'circlepin',
-                                width: 8,
-                                height: 8,
-                                y: -8,
-                                x: -8,
-                                onSeries: 'ordersLine',
-                                color: "#a0ff31",
-                                fillColor: "#a0ff31",
-                                grouping: true,
-                                lineColor: "rgba(3,3,3,0)",
-                                states: {
-                                    inactive: {
-                                        enabled: false,
-                                        opacity: 1
-                                    }
-                                },
-                                data: this.serieData[nameOfbuySell]
-                            }
-                        }
-                        */
+            if (this.serieMap[buyAndSellFlags] === undefined) {
+                this.serieData[buyAndSellFlags] = [];
+                this.serieMap[buyAndSellFlags] = {
+                    type: 'flags',
+                    shape: 'circlepin',
+                    width: 8,
+                    height: 8,
+                    y: -8,
+                    x: -8,
+                    onSeries: 'ordersLine',
+                    color: "#a0ff31",
+                    fillColor: "#a0ff31",
+                    grouping: true,
+                    lineColor: "rgba(3,3,3,1)",
+                    data: this.serieData[buyAndSellFlags]
+                }
+            }
 
 
         } else if (name.startsWith("macd")) {
@@ -459,6 +386,9 @@ class StockChart extends Component {
 
     parseIndicator(pointValue, time, name, group, type) {
         let point = [];
+        if (type === "ohlc") {
+            this.serieData[type].push(pointValue);
+        }
         if (name.startsWith("ema")) {
 
             point = [];
@@ -492,6 +422,7 @@ class StockChart extends Component {
             let usdBalance = group + " UsdBalance";
             let btcBalance = group + " btcBalance";
             let buyAndSellLine = group + "buy And Sell Line";
+            let buyAndSellFlags = group + "buy And Sell flags";
 
             let quantity = parseFloat(pointValue.quantity);
             let price = parseFloat(pointValue.price);
@@ -515,37 +446,36 @@ class StockChart extends Component {
             point.push(time);
             point.push(price);
             this.serieData[buyAndSellLine].push(point);
-            /*
-                        let nameOfbuySell = group+ "A";
-                        if (this.serieMap[nameOfbuySell] === undefined) {
-                            this.serieData[nameOfbuySell] = [];
-                            this.serieMap[nameOfbuySell] = {
-                                type: 'flags',
-                                shape: 'circlepin',
-                                width: 8,
-                                height: 8,
-                                y: -8,
-                                x: -8,
-                                onSeries: 'ordersLine',
-                                color: "#a0ff31",
-                                fillColor: "#a0ff31",
-                                grouping: true,
-                                lineColor: "rgba(3,3,3,0)",
-                                states: {
-                                    inactive: {
-                                        enabled: false,
-                                        opacity: 1
-                                    }
-                                },
-                                data: this.serieData[nameOfbuySell]
-                            }
-                        }
-                        point = [];
-                        point.push(time);
-                        point.push(pointValue.price);
-                        //this.serieData[nameOfbuySell].push(point);
-                        */
 
+
+            /*
+            point = [];
+            point.push(time);
+            point.push(price);
+            this.serieData[buyAndSellFlags].push(point);
+            */
+
+            let color = "rgba(253,253,253,0)";
+            let fillColor = "#a0ff31";
+            let title = "?";
+            if (pointValue.type === "b") {
+                color = "#314810";
+                fillColor = "#a0ff31";
+                title = "B";
+            }
+            if (pointValue.type === "s") {
+                color = "#2f0017";
+                fillColor = "#ff0080";
+                title = "S";
+            }
+            let orderPoint = {
+                x: time,
+                title: title,
+                text: pointValue.type + " " + pointValue.price,
+                color: color,
+                fillColor: fillColor
+            }
+            this.serieData[buyAndSellFlags].push(orderPoint)
 
         } else if (name.startsWith("macd")) {
             //macd
@@ -612,11 +542,15 @@ class StockChart extends Component {
         if (metaIndicator !== undefined && metaOhlc !== undefined) {
             let foundOrders = false;
 
+
+            this.parseSeries("heikinashi", "ohlc", "ohlc");
+
+
             if (metaOhlc.vwap !== undefined) {
-                this.parseSeries("vwap", "ohlc");
+                this.parseSeries("vwap", "ohlc", "vwap");
             }
             if (metaOhlc.volume !== undefined) {
-                this.parseSeries("volume", "volume");
+                this.parseSeries("volume", "ohlc", "volume");
             }
 
             let orders = {};
@@ -649,12 +583,10 @@ class StockChart extends Component {
                     this.parseSeries("", order.group, "orders");
                 }
             }
-        }
-        this.updateSeries();
-        console.log(this.serieMap);
+
+            this.updateSeries();
 
 
-        if (result.OHLC !== undefined) {
             let OHLC = result.OHLC;
             for (let i = 0; i < OHLC.length; i++) {
                 /*TODO perf improv load only 24h to the graph display by default only 8h
@@ -665,7 +597,8 @@ class StockChart extends Component {
                 //TODO optim : To change all data of a series use setData() use setdata https://api.highcharts.com/class-reference/Highcharts.Series#setData
                 //TODO use update data
                 //TODO only display buy and sell for the zoomed period
-                this.data.push(this.parsePointOf(OHLC[i], metaOhlc));
+                this.parseIndicator(this.parsePointOf(OHLC[i], metaOhlc), time, "ohlc", "ohlc", "ohlc");
+
                 if (metaOhlc.vwap !== undefined) {
                     this.parseIndicator(OHLC[i][metaOhlc.vwap.index], time, "vwap", "ohlc");
                 }
@@ -703,8 +636,7 @@ class StockChart extends Component {
                 } else {
                     this.minDate = this.first - 1000 * 60 * 60 * 48;
                     this.maxDate = this.last - 1000 * 60 * 60 * 48;
-                    //this.minDate = this.first;
-                    //sthis.maxDate = this.first + 1000 * 60 * 60 * 2;
+
                 }
             }
             this.updateChart();
@@ -748,10 +680,10 @@ class StockChart extends Component {
                         this.timer = setInterval(() => this.fetchData(), 1000);
                         this.synchronizedYet = true;
                     }
-*/
+                    */
                     if (this.firstBatch === true) {
                         //dont use timer , because there is no garantie that the answer comes in the right order
-                        this.fetchData();
+                        // this.fetchData();
                     }
                 } else if (this.last === result.last) {
 
