@@ -10,6 +10,7 @@ import AnnotationsAdvanced from "highcharts/modules/annotations-advanced.src.js"
 import PriceIndicator from "highcharts/modules/price-indicator.src.js";
 import FullScreen from "highcharts/modules/full-screen.src.js";
 import StockTools from "highcharts/modules/stock-tools.src.js";
+//import Boost from "https://code.highcharts.com/modules/boost.js"
 import Watch from "../lib/watch.js";
 
 StockTools(Highcharts);
@@ -21,7 +22,16 @@ FullScreen(Highcharts);
 HighchartsHeikinashi(Highcharts);
 
 class StockChart extends Component {
-
+    //TODO implement a smartpointer for the watch to overcome asynch orders
+    //TODO better management of the state
+    //TODO load flags tooltips and legend when graph is zoomed
+    //TODO css skin the play button make them play/pause with icon
+    //TODO create a a button that goes to the end /begening/zoom 24/12/8/2 hours/YTD/ALL
+    //TODO fetch data only when chart.onLoad
+    //TODO make the back create the meta from the config even if there is no points
+    //TODO relocate the tooltip display
+    //TODO programaticly create the yAxisis when there is new serie as well the index of the axis
+    //r'emove the navigator button YTD etc
     constructor(props) {
         super(props);
 
@@ -43,9 +53,14 @@ class StockChart extends Component {
         this.watchParseData = new Watch("parse data", "#FF7FFF");
 
         this.state = {
-            serieData: {},
             chartOptions: {
                 navigator: {},
+                legend: {
+                    enabled: false,
+                },
+                tooltip: {
+                    enabled: false
+                },
                 chart: {
                     height: 1300,
                 },
@@ -170,30 +185,32 @@ class StockChart extends Component {
     }
 
     updateSeries() {
-        let options = {
+        let state = {
             chartOptions: {
                 series: []
             }
         }
-
-
         for (let key in this.serieMap) {
-            options.chartOptions.series.push(this.serieMap[key]);
-
+            state.chartOptions.series.push(this.serieMap[key]);
         }
+        console.log("%cbefore updateSeries", "color: #7f7f00", this.state);
+        this.watchUpdateSeries.start();
+        this.setState(state, () => {
+            this.watchUpdateSeries.stop().log();
+            console.log("%cafter updateSeries", "color: #7f7f00", this.state);
+        });
     }
 
     updateChart() {
 
 
-        //console.log("chunk periode : " + new Date(this.first) + " " + new Date(this.last));
         //TODO display flags
         //https://www.highcharts.com/docs/stock/flag-series
         //https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/stock/demo/flags-general
         //TODO try dark unica theme
         //TODO default macd https://www.highcharts.com/demo/stock/macd-pivot-points/dark-unica
 
-        let options = {
+        let state = {
             chartOptions: {
                 xAxis: {
                     min: this.minDate,
@@ -202,19 +219,16 @@ class StockChart extends Component {
                 series: []
             }
         }
-
-        //console.log(this.serieMap);
-        let i = 0;
         for (let key in this.serieMap) {
-            options.chartOptions.series.push(this.serieMap[key]);
-            //options.chartOptions.series.push({data:this.serieMap[key].data});
+            state.chartOptions.series.push(this.serieMap[key]);
         }
-        //  console.log(options);
+        console.log("%cbefore updateData", "color: #FF007f", this.state);
+        this.watchParseData.start();
+        this.setState(state, () => {
+            this.watchParseData.stop().log();
+            console.log("%cafter updateData", "color: #FF007f", this.state);
+        });
 
-
-        this.watchUpdateSeries.start();
-        this.setState(options);
-        this.watchUpdateSeries.stop().log();
 
     }
 
@@ -294,7 +308,7 @@ class StockChart extends Component {
             let usdBalance = group + " UsdBalance";
             let btcBalance = group + " btcBalance";
             let buyAndSellLine = group + "buy And Sell Line";
-            let buyAndSellFlags = group + "buy And Sell flags";
+
             if (this.serieMap[usdBalance] === undefined) {
                 this.serieData[usdBalance] = [];
                 this.serieMap[usdBalance] = {
@@ -326,25 +340,27 @@ class StockChart extends Component {
                 }
             }
 
-
-            if (this.serieMap[buyAndSellFlags] === undefined) {
-                this.serieData[buyAndSellFlags] = [];
-                this.serieMap[buyAndSellFlags] = {
-                    type: 'flags',
-                    shape: 'circlepin',
-                    width: 8,
-                    height: 8,
-                    y: -8,
-                    x: -8,
-                    onSeries: 'ordersLine',
-                    color: "#a0ff31",
-                    fillColor: "#a0ff31",
-                    grouping: true,
-                    lineColor: "rgba(3,3,3,1)",
-                    data: this.serieData[buyAndSellFlags]
-                }
-            }
-
+            /*
+                        let buyAndSellFlags = group + "buy And Sell flags";
+                        if (this.serieMap[buyAndSellFlags] === undefined) {
+                            this.serieData[buyAndSellFlags] = [];
+                            this.serieMap[buyAndSellFlags] = {
+                                type: 'flags',
+                                shape: 'circlepin',
+                                enableMouseTracking: false,
+                                width: 8,
+                                height: 8,
+                                y: -8,
+                                x: -8,
+                                onSeries: 'ordersLine',
+                                color: "#a0ff31",
+                                fillColor: "#a0ff31",
+                                grouping: true,
+                                lineColor: "rgba(3,3,3,1)",
+                                data: this.serieData[buyAndSellFlags]
+                            }
+                        }
+              */
 
         } else if (name.startsWith("macd")) {
             //macd
@@ -448,41 +464,32 @@ class StockChart extends Component {
             this.serieData[buyAndSellLine].push(point);
 
 
-            /*
-            point = [];
-            point.push(time);
-            point.push(price);
-            this.serieData[buyAndSellFlags].push(point);
-            */
-
-            let color = "rgba(253,253,253,0)";
-            let fillColor = "#a0ff31";
-            let title = "?";
-            if (pointValue.type === "b") {
-                color = "#314810";
-                fillColor = "#a0ff31";
-                title = "B";
+            if (this.serieData[buyAndSellFlags] !== undefined) {
+                let color = "rgba(253,253,253,0)";
+                let fillColor = "#a0ff31";
+                let title = "?";
+                if (pointValue.type === "b") {
+                    color = "#314810";
+                    fillColor = "#a0ff31";
+                    title = "B";
+                }
+                if (pointValue.type === "s") {
+                    color = "#2f0017";
+                    fillColor = "#ff0080";
+                    title = "S";
+                }
+                let orderPoint = {
+                    x: time,
+                    title: title,
+                    text: pointValue.type + " " + pointValue.price,
+                    color: color,
+                    fillColor: fillColor
+                };
+                this.serieData[buyAndSellFlags].push(orderPoint);
             }
-            if (pointValue.type === "s") {
-                color = "#2f0017";
-                fillColor = "#ff0080";
-                title = "S";
-            }
-            let orderPoint = {
-                x: time,
-                title: title,
-                text: pointValue.type + " " + pointValue.price,
-                color: color,
-                fillColor: fillColor
-            }
-            this.serieData[buyAndSellFlags].push(orderPoint)
 
         } else if (name.startsWith("macd")) {
-            //macd
             let color = "#00ff00";
-            if (this.macdGroup[group] === undefined) {
-                this.macdGroup[group] = this.axisIndex++;
-            }
             if (name.endsWith("histogram")) {
                 if (pointValue < 0) {
                     color = "#fd007f";
@@ -540,51 +547,50 @@ class StockChart extends Component {
         let metaIndicator = result.metaIndicator;
         let metaOhlc = result.metaOhlc;
         if (metaIndicator !== undefined && metaOhlc !== undefined) {
-            let foundOrders = false;
+            if (this.state.chartOptions.series === undefined) {
+                let foundOrders = false;
+                this.parseSeries("heikinashi", "ohlc", "ohlc");
 
+                if (metaOhlc.vwap !== undefined) {
+                    this.parseSeries("vwap", "ohlc", "vwap");
+                }
+                if (metaOhlc.volume !== undefined) {
+                    this.parseSeries("volume", "ohlc", "volume");
+                }
 
-            this.parseSeries("heikinashi", "ohlc", "ohlc");
+                let orders = {};
+                for (let key in metaIndicator) {
+                    /**
+                     * group "bot1orders" or "bot2orders"
+                     * type  "order"
+                     * name  "quantity"
+                     * ror each group we create an order indexed by group value
+                     */
+                    let group = metaIndicator[key].group;
+                    let type = metaIndicator[key].type;
+                    let name = metaIndicator[key].name;
+                    if (name !== undefined && group !== undefined && type !== undefined && type === "order") {
+                        if (orders.group === undefined) {
+                            orders[group] = {name: "", group: ""};
+                        }
+                        orders[group].name = name;
+                        orders[group].group = group;
+                        foundOrders = true;
 
-
-            if (metaOhlc.vwap !== undefined) {
-                this.parseSeries("vwap", "ohlc", "vwap");
-            }
-            if (metaOhlc.volume !== undefined) {
-                this.parseSeries("volume", "ohlc", "volume");
-            }
-
-            let orders = {};
-            for (let key in metaIndicator) {
-                /**
-                 * group "bot1orders" or "bot2orders"
-                 * type  "order"
-                 * name  "quantity"
-                 * ror each group we create an order indexed by group value
-                 */
-                let group = metaIndicator[key].group;
-                let type = metaIndicator[key].type;
-                let name = metaIndicator[key].name;
-                if (name !== undefined && group !== undefined && type !== undefined && type === "order") {
-                    if (orders.group === undefined) {
-                        orders[group] = {name: "", group: ""};
+                    } else {
+                        this.parseSeries(name, group, type);
                     }
-                    orders[group].name = name;
-                    orders[group].group = group;
-                    foundOrders = true;
-
-                } else {
-                    this.parseSeries(name, group, type);
                 }
-            }
-            if (foundOrders === true) {
-                for (let key in orders) {
-                    let order = orders[key];
+                if (foundOrders === true) {
+                    for (let key in orders) {
+                        let order = orders[key];
 
-                    this.parseSeries("", order.group, "orders");
+                        this.parseSeries("", order.group, "orders");
+                    }
                 }
-            }
 
-            this.updateSeries();
+                this.updateSeries();
+            }
 
 
             let OHLC = result.OHLC;
@@ -683,7 +689,7 @@ class StockChart extends Component {
                     */
                     if (this.firstBatch === true) {
                         //dont use timer , because there is no garantie that the answer comes in the right order
-                        // this.fetchData();
+                        this.fetchData();
                     }
                 } else if (this.last === result.last) {
 
