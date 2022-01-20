@@ -1,0 +1,19 @@
+#navigation {
+    background-color: rgba(0, 255, 211, 0.3);
+}
+
+.menu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.menu li {
+    background-color: #424242;
+    color: #ffffff;
+
+}
+
+.menu li:hover {
+    background-color: #000000;
+}
