@@ -1,7 +1,5 @@
 import Kiss from "../../modules/kiss.js";
 
-import Highcharts from 'https://code.highcharts.com/es-modules/Core/Chart/Chart.js';
-
 
 //TODO front use loadash
 export default class Dashboard extends Kiss {
@@ -15,16 +13,8 @@ export default class Dashboard extends Kiss {
 
     onLoaded(element) {
         super.onLoaded(element);
-        // Example to create a simple line chart in a div#container:
-        Highcharts('stockChart', {series: [{data: [1, 2, 3]}]});
-
     }
 
-    /*
-    render() {
-
-            return '<h3>HTML string</h3>';
-    }*/
 
 }
 

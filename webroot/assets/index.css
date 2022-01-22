@@ -6,8 +6,8 @@ body {
     padding: 0px;
 }
 
-.debug {
-    border: 1px solid #ff0080;
+.debug .view {
+    border: 0px solid #ff0080;
 }
 
 #navigation {

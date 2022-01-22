@@ -43,6 +43,6 @@
     ]
   },
   "devDependencies": {
-    "highcharts-react-official": "^3.1.0"
+    "highcharts-react-official": "github:highcharts/highcharts-dist#nightly"
   }
 }

@@ -141,8 +141,25 @@
 }
 
 
+.menu {
+    background-color: rgba(250, 250, 250, 0.51);
+}
 
+.menu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
 
+.menu li {
+    background-color: #424242;
+    color: #ffffff;
+
+}
+
+.menu li:hover {
+    background-color: #000000;
+}
 
 
 
