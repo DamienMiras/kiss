@@ -1,34 +1,59 @@
 let bus = $("app");
 import Peace from './peace.js';
 import Global from "./global.js";
+//import App from "../views/app/app.js";
 
 let global = new Global();
 export default class Kiss extends Peace {
-    constructor(parentKiss, element) {
+    constructor(factory, parentKiss, element) {
         super();
+        if (!factory) {
+            this.e("factory is null... makes sure to call super with all args factory, parent, element : \n" +
+                "export default class MyClass extends Kiss {\n" +
+                "    constructor(factory, parentKiss, element) {\n" +
+                "        super(factory, parentKiss, element);\n" +
+                "    }\n" +
+                "}")
+        }
+        this.factory = factory;
         this.bus = bus;
         this.gloabl = global;
         this.parentKiss = parentKiss;
-        this.element = element;
-        this.name = element.tagName.toLowerCase();
-        if (this.element) {
-            //this.element.style.border = '1px solid ' +  this.getColor() ;
-            this.element.style.color = this.getColor();
-        } else {
-            this.e("no element yet");
-        }
 
+        if (!element) {
+            this.element = document.getElementsByTagName("app")[0];
+        } else {
+            this.element = element;
+        }
+        this.name = this.element.tagName.toLowerCase();
+        this.element.style.color = this.getColor();
+        this.bus.on("kiss." + this.name, this.onBroadcastMessage.bind(this));
+        /*
+                this.bus.on('kiss', function (e, data) {
+                    console.error(e, data)
+                });
+        */
         try {
             this.load();
         } catch (e) {
             this.e("Kiss.load() error ", e);
         }
-        this.l("yeah yet another kiss built", this.getPath());
-
     }
 
+    onBroadcastMessage(e, data) {
+
+        if (e.type === "kiss" && e.namespace === this.name) {
+            this.onMessageReceived(e, data)
+        }
+    }
+
+    onMessageReceived(e, data) {
+        this.l(this.name + " recevieved a message", data, e);
+    }
+
+
     getPath() {
-        let path = ">";
+        let path = "";
         let parent = this;
         while (parent) {
             path = parent.getName() + '>' + path;
@@ -44,13 +69,13 @@ export default class Kiss extends Peace {
     }
 
     l(...args) {
-        console.log("%c+-------------------------------------------------------------------kiss[" + this.name + "]\t",
+        console.log("%c+------------------------------------kiss[" + this.name + "]-------" + this.getPath() + "\t",
             "color:" + this.getColor() + ";",
             this, "\r\n", ...args);
     }
 
     e(...args) {
-        console.error("%c+-------------------------------------------------------------------kiss[" + this.name + "]\t",
+        console.error("%c+------------------------------------kiss[" + this.name + "]-------" + this.getPath() + "\t",
             "color:" + this.getColor() + ";",
             this, "\r\n", ...args);
     }
@@ -71,12 +96,21 @@ export default class Kiss extends Peace {
         return this.bus;
     }
 
+    onError(url, error) {
+        this.e("fetch error " + url, this, error);
+    }
+
+    onData(url, data) {
+        this.l("data success " + url, this, data);
+    }
+
+    onFile(url, text) {
+    }
+
 
     load() {
-
         let htmlUri = "views/" + this.name + "/" + this.name + ".html";
         let cssUri = "views/" + this.name + "/" + this.name + ".css";
-
 
         this.getContent(
             htmlUri,
@@ -88,16 +122,27 @@ export default class Kiss extends Peace {
                 }
 
                 this.element.innerHTML = content;
-
+                // this.element.style.border = '1px solid ' +  this.getColor() ;
 
                 let kisses = this.element.querySelectorAll('.kiss');
                 for (let kiss of kisses) {
                     let kissName = kiss.tagName.toLowerCase();
                     this.l("found a kiss tag named [" + kissName, "] current  :", this.element, "parent:", parentElement);
-                    new Kiss(this, kiss);
+                    if (this.factory[kissName]) {
+                        new this.factory[kissName](this.factory, this, kiss)
+                    } else {
+                        new Kiss(this.factory, this, kiss);
+                    }
+                    //new Kiss(this.factory, this, kiss);
                     //FIXME should return a promise, to be sure to laoad all the tree before pretent it is loaded
                 }
-                this.onLoaded()
+                try {
+                    this.onLoaded();
+                    this.l("kiss loaded");
+                } catch (e) {
+                    this.e(e);
+                }
+
 
             },
             (url, error) => {
@@ -129,8 +174,7 @@ export default class Kiss extends Peace {
         }
     }
 
-    onLoaded(element, parent) {
-
+    onLoaded() {
 
     }
 
@@ -142,20 +186,7 @@ export default class Kiss extends Peace {
     getColor() {
         if (!this.color) {
             this.color = global.getNextColor();
-
         }
         return this.color;
-    }
-
-
-    onError(url, error) {
-        this.e("fetch error " + url, this, error);
-    }
-
-    onData(url, data) {
-        this.l("data success " + url, this, data);
-    }
-
-    onFile(url, text) {
     }
 }

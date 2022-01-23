@@ -1,18 +1,20 @@
 import Kiss from "../../modules/kiss.js";
 
 export default class Navigation extends Kiss {
-    constructor() {
-        super();
+    constructor(factory, parentKiss, element) {
+        super(factory, parentKiss, element);
 
-
-        this.bus.on('com.miras.loader.view.added', function (e, data) {
-            console.log('%c YEEEES yes yes ' + this.id + ' received the message', "color :#FF007f", data, e);
-        });
 
     }
 
-    onLoaded(element) {
-        super.onLoaded(element);
+    onLoaded() {
+        window.setInterval(function () {
+
+            this.bus.trigger("kiss.header", {aField: "bisous for header ", date: "" + new Date()});
+            this.bus.trigger("kiss", {aField: "bisous for all" + new Date()});
+
+        }.bind(this), 1000 * 5);
+
     }
 }
 

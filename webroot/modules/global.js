@@ -4,7 +4,7 @@ export default class Global {
         this.whitePos = 1;
         this.black = 0;
         this.white = 255;
-        this.cache = [];
+        this.cache = {};
     }
 
     getNextColor() {
@@ -37,7 +37,6 @@ export default class Global {
         if (this.cache[k] !== undefined) {
             this.cache[k] = content;
         }
-
     }
 
     getCached(k) {
