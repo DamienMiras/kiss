@@ -35,17 +35,7 @@ export default class Kiss extends Peace {
         } catch (e) {
             this.e("Kiss.load() error ", e);
         }
-    }
-
-    onBroadcastMessage(e, data) {
-
-        if (e.type === "kiss" && e.namespace === this.name) {
-            this.onMessageReceived(e, data)
-        }
-    }
-
-    onMessageReceived(e, data) {
-        this.l(this.name + " recevieved a message", data, e);
+        this.visualDebug = true;
     }
 
 
@@ -148,11 +138,8 @@ export default class Kiss extends Peace {
         this.getContent(
             htmlUri,
             (url, content) => {
-
                 this.element.innerHTML = content;
-
                 return loadAllkisses();
-
             },
             (url, error) => {
                 let rend = this.render();
@@ -199,4 +186,25 @@ export default class Kiss extends Peace {
         }
         return this.color;
     }
+
+    onBroadcastMessage(e, data) {
+
+        if (e.type === "kiss" && e.namespace === this.name) {
+            this.onMessageReceived(e, data)
+        }
+    }
+
+    onMessageReceived(e, meta) {
+        this.l(this.name + " recevieved a message type[" + meta.type + "] from " + meta.from.getName(), meta.data, e);
+    }
+
+    postMessage(from, to, type, data) {
+
+        this.bus.trigger("kiss." + to, {
+            type: type,
+            data: data,
+            from: from
+        });
+    }
+
 }
