@@ -3,12 +3,9 @@ import Kiss from "../../modules/kiss.js";
 export default class Dashboard extends Kiss {
     constructor(factory, parentKiss, element) {
         super(factory, parentKiss, element);
-        //TODO text inside buy and sell
         //TODO move the tooltips
         //TODO sometimes graph does not expands
-        //TODO navator overlap the legend of time
         //TODO load only the flag for 4 hours
-
         this.axisIndex = 2;
         this.serieMap = {};
         this.serieData = {};
@@ -25,6 +22,9 @@ export default class Dashboard extends Kiss {
 
         this.chartOptions = {
             navigator: {},
+            rangeSelector: {
+                enabled: false
+            },
             series: [],
 
             credits: {
@@ -32,16 +32,35 @@ export default class Dashboard extends Kiss {
             },
             legend: {
                 enabled: true,
+                floating: true,
+                align: 'left',
+                x: 0,
+                y: -55
             },
             tooltip: {
                 //enabled: false
                 style: {
                     color: "#FFFFFF"
-                }
+                },
+                shared: true,
+                positioner: function () {
+                    return {x: 80, y: 50};
+                },
             },
+            /*
+              tooltip: {
+                shared: true,
+                useHTML: true,
+                headerFormat: '<table><tr><th colspan="2">{point.key}</th></tr>',
+                pointFormat: '<tr><td style="color: {series.color}">{series.name} </td>' +
+                    '<td style="text-align: right"><b>{point.y} EUR</b></td></tr>',
+                footerFormat: '</table>',
+                valueDecimals: 2
+            },*/
+
             chart: {
                 height: 1300,
-                margin: [0, 200, 0, 0],
+                margin: [0, 200, 40, 0],
                 //plotBorderWidth: 1,
                 borderWidth: 1,
                 styledMode: false
@@ -97,6 +116,7 @@ export default class Dashboard extends Kiss {
                     height: '70%',
                     resize: {
                         enabled: false
+                        //Axis.resize.lineDashStyle: Dash style of the control line.
                     }
                 }, {
                     gridLineWidth: 0,
@@ -239,7 +259,7 @@ export default class Dashboard extends Kiss {
                     offset: 0,
                     color: "#ffe57f",
                     top: '85%',
-                    height: '11%',
+                    height: '15%',
                     marker: {
                         enabled: true
                     },
