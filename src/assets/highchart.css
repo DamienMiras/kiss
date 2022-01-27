@@ -215,7 +215,7 @@
 }
 
 .highcharts-tooltip text {
-    color: #0000f6;
+    fill: #E0E0E3;
 }
 
 .highcharts-tooltip .highcharts-header {
@@ -264,7 +264,7 @@ div.highcharts-tooltip {
 }
 
 .highcharts-series-inactive {
-    opacity: 0.7;
+    opacity: 0.2;
     transition: opacity 50ms;
     /* quick in */
 }
@@ -837,14 +837,32 @@ input.highcharts-range-selector {
     stroke-width: 1px;
 }
 
+.highcharts-candlestick-series .highcharts-point-up {
+    fill: #2a2a2b;
+}
+
+.highcharts-hollowcandlestick-series .highcharts-point-down {
+    fill: #f21313;
+    stroke: #f21313;
+}
+
+.highcharts-hollowcandlestick-series .highcharts-point-down-bearish-up {
+    fill: #06b535;
+    stroke: #06b535;
+}
+
+.highcharts-hollowcandlestick-series .highcharts-point-up {
+    fill: transparent;
+    stroke: #06b535;
+}
 
 .highcharts-ohlc-series .highcharts-point-hover {
     stroke-width: 3px;
 }
 
 .highcharts-flags-series .highcharts-point .highcharts-label-box {
-    /*   stroke: #575757;*/
-    /*    fill: #2a2a2b;*/
+    stroke: #666;
+    fill: #2a2a2b;
     transition: fill 250ms;
 }
 
@@ -854,8 +872,7 @@ input.highcharts-range-selector {
 }
 
 .highcharts-flags-series .highcharts-point text {
-    /* text in the flags*/
-    fill: rgba(0, 0, 0, 0);
+    fill: #fff;
     font-size: 0.9em;
     font-weight: bold;
 }

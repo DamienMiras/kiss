@@ -248,7 +248,7 @@ class StockChart extends Component {
                     type: 'heikinashi',
                     //type: 'candlestick',
                     name: name,
-                    id: 'hikinashiId',
+                    id: name,
                     data: this.serieData[type]
                 }
             }
@@ -262,6 +262,7 @@ class StockChart extends Component {
                 this.serieMap[name] = {
                     yAxis: 0,
                     name: name,
+                    id: name,
                     color: "#c2ff00",
                     data: this.serieData[name]
                 }
@@ -274,6 +275,7 @@ class StockChart extends Component {
                 this.serieMap[name] = {
                     yAxis: 0,
                     name: name,
+                    id: name,
                     color: "#00ffff",
                     data: this.serieData[name]
                 }
@@ -286,6 +288,7 @@ class StockChart extends Component {
                 this.serieMap[name] = {
                     yAxis: 5,
                     name: name,
+                    id: name,
                     type: 'column',
                     color: "#79ff37",
                     data: this.serieData[name]
@@ -299,6 +302,7 @@ class StockChart extends Component {
                 this.serieMap[name] = {
                     yAxis: 0,
                     name: name,
+                    id: name,
                     color: "#7b66fc",
                     data: this.serieData[name]
                 }
@@ -314,6 +318,7 @@ class StockChart extends Component {
                 this.serieMap[usdBalance] = {
                     yAxis: 1,
                     name: group + " USD balance",
+                    id: usdBalance,
                     color: "#00880a",
                     data: this.serieData[usdBalance]
                 }
@@ -323,6 +328,7 @@ class StockChart extends Component {
                 this.serieData[btcBalance] = [];
                 this.serieMap[btcBalance] = {
                     yAxis: 2,
+                    id: btcBalance,
                     name: group + "BTC balance",
                     color: "#bb9004",
                     data: this.serieData[btcBalance]
@@ -333,7 +339,7 @@ class StockChart extends Component {
                 this.serieData[buyAndSellLine] = [];
                 this.serieMap[buyAndSellLine] = {
                     yAxis: 0,
-                    id: "ordersLine",
+                    id: buyAndSellLine,
                     name: group + "hidden placement serie",
                     color: "rgba(253,253,253,1)",
                     data: this.serieData[buyAndSellLine]
@@ -348,11 +354,12 @@ class StockChart extends Component {
                                 type: 'flags',
                                 shape: 'circlepin',
                                 enableMouseTracking: false,
+                                id:buyAndSellFlags,
                                 width: 8,
                                 height: 8,
                                 y: -8,
                                 x: -8,
-                                onSeries: 'ordersLine',
+                                onSeries: buyAndSellLine,
                                 color: "#a0ff31",
                                 fillColor: "#a0ff31",
                                 grouping: true,

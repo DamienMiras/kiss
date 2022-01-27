@@ -5,12 +5,14 @@ import Navigation from "./views/navigation/navigation.js";
 import Header from "./views/header/header.js";
 import DashboardMenu from "./views/dashboard_menu/dashboardMenu.js";
 
-
+window.context = {
+    global: "this is really global"
+}
 window.onload = () => {
 
     console.log("------------------------------------on loaaad-----------------------------------------------------------------s")
 
-
+    console.log("this is a global object", context.global);
     let factory = {
         "app": App,
         "dashboard": Dashboard,

@@ -10,15 +10,23 @@ export default class Dashboardmenu extends Kiss {
     }
 
     onLoaded() {
-        this.fetchData({
-            last: 0,
-            limit: 4320
-        });
 
+
+        /*
         window.setInterval(function () {
-            this.postMessage(this, "dashboard", "test", "I am alive");
+          //  this.postMessage(this, "dashboard", "test", "I am alive");
         }.bind(this), 1000 * 10);
+        */
+    }
 
+    onMessageReceived(e, meta) {
+        super.onMessageReceived(e, meta);
+        if (meta.from.getName() === "dashboard" && meta.data === "loaded") {
+            this.fetchData({
+                last: 0,
+                limit: 4320
+            });
+        }
     }
 
     fetchData(parameters) {
