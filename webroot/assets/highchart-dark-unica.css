@@ -84,7 +84,8 @@
 }
 
 .highcharts-root text {
-    stroke-width: 0;
+    /* stroke-width: 0; */
+    color: aliceblue;
 }
 
 .highcharts-strong {
@@ -140,11 +141,10 @@
 
 /* Axes */
 .highcharts-axis-line {
-    fill: none;
-    stroke: #707073;
+
 }
 
-.highcharts-yaxis .highcharts-axis-line {
+.highcharts-yaxis {
 
 }
 
@@ -255,13 +255,13 @@ div.highcharts-tooltip {
 }
 
 .highcharts-point-inactive {
-    opacity: 0.2;
+    opacity: 0.9;
     transition: opacity 50ms;
     /* quick in */
 }
 
 .highcharts-series-inactive {
-    opacity: 0.2;
+    opacity: 0.9;
     transition: opacity 50ms;
     /* quick in */
 }
@@ -299,8 +299,8 @@ g.highcharts-series,
 }
 
 .highcharts-color-1 {
-    fill: #90ee7e;
-    stroke: #90ee7e;
+    /* fill: #90ee7e; */
+    /* stroke: #90ee7e; */
 }
 
 .highcharts-color-2 {
@@ -355,7 +355,7 @@ g.highcharts-series,
 
 .highcharts-markers {
     stroke-width: 1px;
-    stroke: #f50303;
+    /* stroke: #f50303; */
 }
 
 .highcharts-a11y-markers-hidden .highcharts-point:not(.highcharts-point-hover):not(.highcharts-a11y-marker-visible),
@@ -680,7 +680,7 @@ circle.highcharts-legend-nav-active, circle.highcharts-legend-nav-inactive {
 
 .highcharts-navigator-outline {
     stroke: #606063;
-    fill: none;
+    fill: rgba(96, 96, 99, 0.24);
 }
 
 .highcharts-navigator-handle {
@@ -702,8 +702,8 @@ circle.highcharts-legend-nav-active, circle.highcharts-legend-nav-inactive {
     fill-opacity: 0.05;
 }
 
-.highcharts-navigator-xaxis .highcharts-axis-line {
-    stroke-width: 0;
+.highcharts-navigator-xaxis {
+    stroke-width: 0.5;
 }
 
 .highcharts-navigator-xaxis .highcharts-grid-line {
@@ -857,18 +857,15 @@ input.highcharts-range-selector {
     stroke-width: 3px;
 }
 
-.highcharts-flags-series .highcharts-point .highcharts-label-box {
-    stroke: #525252;
-    transition: fill 250ms;
+.highcharts-flags-series .highcharts-point .highcharts-label-box { /* transition: fill 250ms; */
 }
 
 .highcharts-flags-series .highcharts-point-hover .highcharts-label-box {
-    stroke: #fff;
+
 
 }
 
 .highcharts-flags-series .highcharts-point text {
-    fill: #fff;
     font-size: 0.9em;
     font-weight: bold;
 }
@@ -1068,8 +1065,8 @@ g.highcharts-series, .highcharts-markers, .highcharts-point {
     stroke-width: 1px;
 }
 
-.highcharts-grid-axis .highcharts-axis-line {
-    stroke-width: 1px;
+.highcharts-grid-axis {
+    stroke-width: 0.5px;
 }
 
 

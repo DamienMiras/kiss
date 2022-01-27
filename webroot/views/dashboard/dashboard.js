@@ -3,6 +3,11 @@ import Kiss from "../../modules/kiss.js";
 export default class Dashboard extends Kiss {
     constructor(factory, parentKiss, element) {
         super(factory, parentKiss, element);
+        //TODO text inside buy and sell
+        //TODO move the tooltips
+        //TODO sometimes graph does not expands
+        //TODO navator overlap the legend of time
+        //TODO load only the flag for 4 hours
 
         this.axisIndex = 2;
         this.serieMap = {};
@@ -13,8 +18,8 @@ export default class Dashboard extends Kiss {
 
         this.last = 0;
         this.first = undefined;
-        this.minDate = new Date().getMilliseconds() - 1000 * 60 * 60 * 24 * 30;
-        this.maxDate = new Date().getMilliseconds();
+        this.minDate = undefined //new Date().getMilliseconds() - 1000 * 60 * 60 * 24 * 30;
+        this.maxDate = undefined // new Date().getMilliseconds();
         this.seriesMinDate = undefined;
         this.seriesMaxDate = undefined;
 
@@ -26,7 +31,7 @@ export default class Dashboard extends Kiss {
                 enabled: false
             },
             legend: {
-                //enabled: true,
+                enabled: true,
             },
             tooltip: {
                 //enabled: false
@@ -60,7 +65,7 @@ export default class Dashboard extends Kiss {
                 }
             },
             xAxis: {
-                gridLineColor: '#ababab',
+                gridLineColor: 'rgba(171,171,171,0.5)',
                 gridLineWidth: 0.5,
                 crossHairt: true,
                 min: this.minDate,
@@ -68,24 +73,23 @@ export default class Dashboard extends Kiss {
             },
             yAxis: [
                 {
-                    gridLineColor: '#ababab',
+                    gridLineColor: 'rgba(171,171,171,0.51)',
                     gridLineWidth: 0.5,
-                    tickWidth: 1,
-                    tickColor: '#cd1400',
-
+                    lineColor: '#FF0000',
+                    lineWidth: 1,
                     title: {
                         text: 'OHLC',
-                        verticalAlign: 'top',
+                        align: 'high',
                         x: 35,
-                        y: 5,
+                        y: 0,
                         style: {
                             color: '#ffffff'
                         }
                     },
                     labels: {
                         align: 'right',
-                        x: 35,
-                        y: 10,
+                        x: 36,
+                        y: 5,
                         style: {
                             color: '#fffdfe'
                         }
@@ -97,15 +101,18 @@ export default class Dashboard extends Kiss {
                 }, {
                     gridLineWidth: 0,
                     title: {
-                        text: 'USD balance',
-                        x: 60,
+                        text: 'USD bal.',
+                        align: 'high',
+                        x: 70,
+                        y: 0,
                         style: {
                             color: '#00880a'
                         }
                     },
                     labels: {
                         align: 'right',
-                        x: 60,
+                        x: 72,
+                        y: 5,
                         style: {
                             color: '#00880a'
                         }
@@ -113,20 +120,23 @@ export default class Dashboard extends Kiss {
                     top: '0%',
                     height: '70%',
                     resize: {
-                        enabled: true
+                        enabled: false
                     }
                 }, {
+                    gridLineWidth: 0,
                     title: {
-                        text: 'BTC balance',
-                        x: 90,
+                        text: 'BTC bal.',
+                        align: 'high',
+                        x: 105,
+                        y: 0,
                         style: {
                             color: '#bb9004'
                         }
                     },
-                    gridLineWidth: 0,
                     labels: {
                         align: 'right',
-                        x: 90,
+                        x: 108,
+                        y: 5,
                         style: {
                             color: '#bb9004'
                         }
@@ -142,20 +152,27 @@ export default class Dashboard extends Kiss {
                     lineWidth: 0.5,
                     gridLineColor: '#ababab',
                     gridLineWidth: 0.5,
-                    labels: {
-                        align: 'right',
-                        x: -500
-                    },
                     title: {
+                        align: 'high',
+                        y: 10,
+                        x: 35,
                         text: 'MACD short',
                         style: {
                             color: '#ffffff'
                         }
                     },
+                    labels: {
+                        align: 'right',
+                        x: 36,
+                        y: 5,
+                        style: {
+                            color: '#bb9004'
+                        }
+                    },
                     offset: 0,
                     color: "#ffe57f",
-                    height: '10%',
                     top: '70%',
+                    height: '10%',
                     marker: {
                         enabled: true
                     },
@@ -169,15 +186,26 @@ export default class Dashboard extends Kiss {
                     gridLineColor: '#ababab',
                     gridLineWidth: 0.5,
                     title: {
+                        align: 'high',
+                        y: 10,
+                        x: 35,
                         text: 'MACD long',
+                        style: {
+                            color: '#ffffff'
+                        }
+                    },
+                    labels: {
+                        align: 'right',
+                        x: 36,
+                        y: 5,
                         style: {
                             color: '#ffffff'
                         }
                     },
                     offset: 0,
                     color: "#ffe57f",
-                    height: '10%',
                     top: '80%',
+                    height: '5%',
                     marker: {
                         enabled: true
                     },
@@ -185,22 +213,33 @@ export default class Dashboard extends Kiss {
                     resize: {
                         enabled: true
                     }
-                }
-                , {
+                },
+                {
                     lineColor: '#ababab',
                     lineWidth: 0.5,
                     gridLineColor: '#ababab',
                     gridLineWidth: 0.5,
                     title: {
+                        align: 'high',
+                        y: 10,
+                        x: 35,
                         text: 'Volume',
+                        style: {
+                            color: '#ffffff'
+                        }
+                    },
+                    labels: {
+                        align: 'right',
+                        x: 36,
+                        y: 5,
                         style: {
                             color: '#ffffff'
                         }
                     },
                     offset: 0,
                     color: "#ffe57f",
-                    height: '10%',
-                    top: '90%',
+                    top: '85%',
+                    height: '11%',
                     marker: {
                         enabled: true
                     },
@@ -363,7 +402,7 @@ export default class Dashboard extends Kiss {
         } else if (type === "orders") {
             let usdBalance = group + " UsdBalance";
             let btcBalance = group + " btcBalance";
-            let buyAndSellLine = group + "buy And Sell Line";
+            let buyAndSellLine = group + " buy And Sell Line";
 
             if (this.serieMap[usdBalance] === undefined) {
                 this.serieData[usdBalance] = [];
@@ -392,13 +431,13 @@ export default class Dashboard extends Kiss {
                 this.serieMap[buyAndSellLine] = {
                     yAxis: 0,
                     id: buyAndSellLine,
-                    name: group + "hidden placement serie",
+                    name: group + " buy and sell line",
                     color: "rgba(253,253,253,0.5)",
                     data: this.serieData[buyAndSellLine]
                 }
             }
 
-            let buyAndSellFlags = group + "buy And Sell flags";
+            let buyAndSellFlags = group + " buy And Sell flags";
             if (this.serieMap[buyAndSellFlags] === undefined) {
                 this.serieData[buyAndSellFlags] = [];
                 this.serieMap[buyAndSellFlags] = {
@@ -411,10 +450,11 @@ export default class Dashboard extends Kiss {
                     x: -8,
                     onSeries: buyAndSellLine,
                     id: buyAndSellFlags,
-                    color: "#a0ff31",
-                    fillColor: "#a0ff31",
+                    name: group + "buy and sell orders",
+                    //     color: "#a0ff31",
+                    //     fillColor: "#a0ff31",
                     grouping: false,
-                    lineColor: "rgba(3,3,3,1)",
+                    lineColor: "rgba(3,3,3,0)",
                     data: this.serieData[buyAndSellFlags]
                 }
             }
@@ -579,8 +619,8 @@ export default class Dashboard extends Kiss {
 
             let usdBalance = group + " UsdBalance";
             let btcBalance = group + " btcBalance";
-            let buyAndSellLine = group + "buy And Sell Line";
-            let buyAndSellFlags = group + "buy And Sell flags";
+            let buyAndSellLine = group + " buy And Sell Line";
+            let buyAndSellFlags = group + " buy And Sell flags";
 
             let quantity = parseFloat(pointValue.quantity);
             let price = parseFloat(pointValue.price);
@@ -611,14 +651,13 @@ export default class Dashboard extends Kiss {
                 let fillColor = "#a0ff31";
                 let title = "?";
                 if (pointValue.type === "b") {
-                    color = "#314810";
+                    color = "#000000";
                     fillColor = "#a0ff31";
-                    title = "";
-                }
-                if (pointValue.type === "s") {
-                    color = "#2f0017";
+                    title = "B";
+                } else {
+                    color = "#ff002f";
                     fillColor = "#ff0080";
-                    title = "";
+                    title = "S";
                 }
                 let orderPoint = {
                     x: time,
@@ -662,21 +701,28 @@ export default class Dashboard extends Kiss {
     }
 
     updateData() {
+        let range = 1000 * 60 * 60 * 1;
+        this.minDate = this.first;
+        this.maxDate = this.first + range;
+
 
         let series = this.chart.series;
         for (let i in series) {
             let serie = series[i];
+            this.l("series :", serie);
             let data = this.serieData[serie.options.id];
             if (data !== undefined) {
-                serie.setData(data);
+                if (serie.options.type !== "flags") {
+                    serie.setData(data);
+                } else {
+                    if (range <= 1000 * 60 * 60 * 1) {
+
+                    }
+                }
             }
         }
-
-        this.minDate = this.first;
-        this.maxDate = this.first + 1000 * 60 * 60 * 1;
-
-
         this.chart.xAxis[0].setExtremes(this.minDate, this.maxDate);
+
 
         console.log("this is a global object", context.global);
     }
