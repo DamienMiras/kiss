@@ -35,7 +35,8 @@ export default class Kiss extends Peace {
         } catch (e) {
             this.e("Kiss.load() error ", e);
         }
-        this.visualDebug = true;
+        //TODO set as global, to get it from the console
+        this.visualDebug = false;
     }
 
 

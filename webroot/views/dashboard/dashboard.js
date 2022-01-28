@@ -26,7 +26,6 @@ export default class Dashboard extends Kiss {
                 enabled: false
             },
             series: [],
-
             credits: {
                 enabled: false
             },
@@ -37,32 +36,47 @@ export default class Dashboard extends Kiss {
                 x: 0,
                 y: -55
             },
+
             tooltip: {
                 //enabled: false
                 style: {
                     color: "#FFFFFF"
                 },
+                split: false,
                 shared: true,
-                positioner: function () {
-                    return {x: 80, y: 50};
-                },
-            },
-            /*
-              tooltip: {
-                shared: true,
-                useHTML: true,
-                headerFormat: '<table><tr><th colspan="2">{point.key}</th></tr>',
-                pointFormat: '<tr><td style="color: {series.color}">{series.name} </td>' +
-                    '<td style="text-align: right"><b>{point.y} EUR</b></td></tr>',
-                footerFormat: '</table>',
-                valueDecimals: 2
-            },*/
+                borderRadius: 0,
 
+                positioner: function () {
+                    return {x: 7, y: 7};
+                },
+                //TODO see https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/highcharts/tooltip/formatter-split/
+                useHTML: true,
+                headerFormat: '<table><tr><th colspan="3">{point.key}</th></tr>',
+                pointFormat:
+                    '<tr><td style="color: {series.color}">{series.name}  {series.color} </td>' +
+                    '<td style="color: {series.color};text-align: right;">' +
+                    'open <b>{point.open}</b> high <b>{point.high}</b>  low <b>{point.low}</b>  close <b>{point.close}</b> ' +
+                    '</td>' +
+                    '<td style="text-align: right"><b>{point.y}</b></td></tr>',
+                footerFormat: '</table>',
+                /*formatter: function () {
+                    // The first returned item is the header, subsequent items are the
+                    // points
+                    return ['<b>' + this.x + '</b>'].concat(
+                        this.points ?
+                            this.points.map(function (point) {
+                                console.log(point);
+                                return point.series.name + ': ' + point.y + 'm ';
+                            }) : []
+                    );
+                },*/
+                valueDecimals: 2
+            },
             chart: {
                 height: 1300,
                 margin: [0, 200, 40, 0],
-                //plotBorderWidth: 1,
-                borderWidth: 1,
+                borderWidth: 0.5,
+                borderColor: "rgba(255,255,255,0.50)",
                 styledMode: false
             },
             title: {
@@ -86,16 +100,20 @@ export default class Dashboard extends Kiss {
             xAxis: {
                 gridLineColor: 'rgba(171,171,171,0.5)',
                 gridLineWidth: 0.5,
-                crossHairt: true,
                 min: this.minDate,
-                max: this.maxDate
+                max: this.maxDate,
+                crosshair: true,
             },
             yAxis: [
                 {
+                    crosshair: {
+                        snap: false,
+                        color: "rgba(255,0,115,0.58)"
+                    },
                     gridLineColor: 'rgba(171,171,171,0.51)',
                     gridLineWidth: 0.5,
-                    lineColor: '#FF0000',
-                    lineWidth: 1,
+                    lineColor: '#ffffff',
+                    lineWidth: 0.5,
                     title: {
                         text: 'OHLC',
                         align: 'high',
@@ -143,6 +161,7 @@ export default class Dashboard extends Kiss {
                         enabled: false
                     }
                 }, {
+
                     gridLineWidth: 0,
                     title: {
                         text: 'BTC bal.',
@@ -721,7 +740,7 @@ export default class Dashboard extends Kiss {
     }
 
     updateData() {
-        let range = 1000 * 60 * 60 * 1;
+        let range = 1000 * 60 * 60 * 4;
         this.minDate = this.first;
         this.maxDate = this.first + range;
 
@@ -729,7 +748,7 @@ export default class Dashboard extends Kiss {
         let series = this.chart.series;
         for (let i in series) {
             let serie = series[i];
-            this.l("series :", serie);
+
             let data = this.serieData[serie.options.id];
             if (data !== undefined) {
                 if (serie.options.type !== "flags") {

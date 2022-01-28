@@ -180,7 +180,7 @@
 
 .highcharts-crosshair-thin {
     stroke-width: 1px;
-    stroke: #606063;
+    stroke: rgba(255, 0, 115, 0.58);
 }
 
 .highcharts-crosshair-category {
