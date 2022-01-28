@@ -21,7 +21,16 @@ export default class Dashboard extends Kiss {
         this.seriesMaxDate = undefined;
 
         this.chartOptions = {
-            navigator: {},
+
+            navigator: {
+                top: 1181,
+                height: 40,
+                series: {
+                    color: 'rgb(121,255,55,0.5)',
+                    //lineWidth: 0.5
+                }
+                //adaptToUpdatedData: false,
+            },
             rangeSelector: {
                 enabled: false
             },
@@ -34,7 +43,7 @@ export default class Dashboard extends Kiss {
                 floating: true,
                 align: 'left',
                 x: 0,
-                y: -55
+                y: 0
             },
 
             tooltip: {
@@ -77,7 +86,12 @@ export default class Dashboard extends Kiss {
                 margin: [0, 200, 40, 0],
                 borderWidth: 0.5,
                 borderColor: "rgba(255,255,255,0.50)",
-                styledMode: false
+                styledMode: false,
+                events: {
+                    load: this.chartLoad.bind(this),
+                    redraw: this.chartRedraw.bind(this),
+                    render: this.chartRender.bind(this)
+                },
             },
             title: {
                 style: {
@@ -94,6 +108,11 @@ export default class Dashboard extends Kiss {
                             enabled: false,
                             opacity: 1
                         }
+                    },
+                    point: {
+                        events: {
+                            mouseOver: this.seriesmouseOver.bind(this)
+                        }
                     }
                 }
             },
@@ -103,6 +122,11 @@ export default class Dashboard extends Kiss {
                 min: this.minDate,
                 max: this.maxDate,
                 crosshair: true,
+                labels: {
+                    style: {
+                        color: '#fffdfe'
+                    }
+                },
             },
             yAxis: [
                 {
@@ -539,6 +563,21 @@ export default class Dashboard extends Kiss {
         }
     }
 
+    seriesmouseOver(event) {
+        console.info("highchart series mouse over", this, event);
+    }
+
+    chartLoad(event) {
+        console.error("highchart LOAD cool", this, event);
+    }
+
+    chartRedraw(event) {
+        console.error("highchart REDRAW cool", this, event);
+    }
+
+    chartRender(event) {
+        console.error("highchart RENDER cool", this, event);
+    }
 
     parseData(result) {
 
