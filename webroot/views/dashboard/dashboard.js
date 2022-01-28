@@ -19,9 +19,12 @@ export default class Dashboard extends Kiss {
         this.maxDate = undefined // new Date().getMilliseconds();
         this.seriesMinDate = undefined;
         this.seriesMaxDate = undefined;
+        this.maxRangeForFlags = 1000 * 60 * 60 * 4;
 
         this.chartOptions = {
-
+            scrollbar: {
+                liveRedraw: false
+            },
             navigator: {
                 top: 1181,
                 height: 40,
@@ -29,7 +32,6 @@ export default class Dashboard extends Kiss {
                     color: 'rgb(121,255,55,0.5)',
                     //lineWidth: 0.5
                 }
-                //adaptToUpdatedData: false,
             },
             rangeSelector: {
                 enabled: false
@@ -113,6 +115,9 @@ export default class Dashboard extends Kiss {
                         events: {
                             mouseOver: this.onSeriesMouseOver.bind(this)
                         }
+                    },
+                    series: {
+                        animation: false
                     }
                 }
             },
@@ -320,9 +325,9 @@ export default class Dashboard extends Kiss {
     }
 
     onLoaded() {
-
         this.chart = Highcharts.stockChart('stockChart', this.chartOptions);
-        this.postMessage(this, "dashboard_menu", "status", "loaded");
+        //after event onLoad the chart will postMessage asking data
+
     }
 
 
@@ -470,7 +475,7 @@ export default class Dashboard extends Kiss {
             }
 
         } else if (type === "orders") {
-            let usdBalance = group + " UsdBalance";
+            let usdBalance = group + " usdBalance";
             let btcBalance = group + " btcBalance";
             let buyAndSellLine = group + " buy And Sell Line";
 
@@ -528,7 +533,7 @@ export default class Dashboard extends Kiss {
                     //     fillColor: "#a0ff31",
                     grouping: false,
                     lineColor: "rgba(3,3,3,0)",
-                    data: this.serieData[buyAndSellFlags]
+                    data: []
                 }
             }
 
@@ -579,7 +584,8 @@ export default class Dashboard extends Kiss {
     }
 
     onChartLoad(event) {
-        console.error("highchart LOAD", this, event);
+        this.l("highchart LOAD", this, event);
+        this.postMessage(this, "dashboard_menu", "status", "loaded");
     }
 
     onChartRedraw(event) {
@@ -591,8 +597,47 @@ export default class Dashboard extends Kiss {
     }
 
     onSerieSetExtremes(event) {
-        console.info("highchart SET EXTREME", this, event);
+
+        if (event.userMax === undefined || event.userMin === undefined) {
+            return;
+        }
+        this.debounce(() => {
+
+            let range = event.userMax - event.userMin;
+
+            let series = this.chart.series;
+            for (let i in series) {
+                let serie = series[i];
+                if (serie.options.type === "flags") {
+                    if (range <= this.maxRangeForFlags) {
+                        let data = this.serieData[serie.options.id];
+                        if (data !== undefined) {
+                            let chunkedData = data.filter((point) => {
+                                return point.x >= event.userMin && point.x <= event.userMax;
+                            }).sort((pa, pb) => {
+                                return pa.x - pb.x
+                            });
+                            serie.setData(chunkedData, false, false);
+                        }
+                    } else {
+                        serie.setData([], false, false);
+                    }
+                }
+                if (serie.options.id.endsWith(" buy And Sell Line")) {
+                    if (range <= this.maxRangeForFlags) {
+                        //.visible = true/false doesnt works of course
+                        serie.opacity = 1;
+                    } else {
+                        serie.opacity = 0;
+                    }
+                }
+            }
+            this.chart.redraw();
+        }, 400)();
+
+
     }
+
 
     parseData(result) {
 
@@ -710,7 +755,7 @@ export default class Dashboard extends Kiss {
 
         } else if (type === "order") {
 
-            let usdBalance = group + " UsdBalance";
+            let usdBalance = group + " usdBalance";
             let btcBalance = group + " btcBalance";
             let buyAndSellLine = group + " buy And Sell Line";
             let buyAndSellFlags = group + " buy And Sell flags";
@@ -748,7 +793,7 @@ export default class Dashboard extends Kiss {
                     fillColor = "#a0ff31";
                     title = "B";
                 } else {
-                    color = "#ff002f";
+                    color = "#ffffff";
                     fillColor = "#ff0080";
                     title = "S";
                 }

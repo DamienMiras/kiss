@@ -86,7 +86,7 @@
 
 .highcharts-root text {
     /* stroke-width: 0; */
-    color: aliceblue;
+    /* color: white; */
 }
 
 .highcharts-strong {
@@ -300,8 +300,8 @@ g.highcharts-series,
 }
 
 .highcharts-color-1 {
-    fill: #90ee7e;
-    stroke: #90ee7e;
+    /* fill: #90ee7e; */
+    /* stroke: #90ee7e; */
 }
 
 .highcharts-color-2 {
