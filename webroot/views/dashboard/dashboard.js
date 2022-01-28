@@ -88,9 +88,9 @@ export default class Dashboard extends Kiss {
                 borderColor: "rgba(255,255,255,0.50)",
                 styledMode: false,
                 events: {
-                    load: this.chartLoad.bind(this),
-                    redraw: this.chartRedraw.bind(this),
-                    render: this.chartRender.bind(this)
+                    load: this.onChartLoad.bind(this),
+                    redraw: this.onChartRedraw.bind(this),
+                    render: this.onChartRender.bind(this)
                 },
             },
             title: {
@@ -111,7 +111,7 @@ export default class Dashboard extends Kiss {
                     },
                     point: {
                         events: {
-                            mouseOver: this.seriesmouseOver.bind(this)
+                            mouseOver: this.onSeriesMouseOver.bind(this)
                         }
                     }
                 }
@@ -127,6 +127,9 @@ export default class Dashboard extends Kiss {
                         color: '#fffdfe'
                     }
                 },
+                events: {
+                    afterSetExtremes: this.onSerieSetExtremes.bind(this)
+                }
             },
             yAxis: [
                 {
@@ -418,6 +421,7 @@ export default class Dashboard extends Kiss {
                     name: name,
                     id: name,
                     color: "#c2ff00",
+                    lineWidth: 0.5,
                     data: this.serieData[name]
                 }
             }
@@ -431,6 +435,7 @@ export default class Dashboard extends Kiss {
                     name: name,
                     id: name,
                     color: "#00ffff",
+                    lineWidth: 0.5,
                     data: this.serieData[name]
                 }
             }
@@ -444,6 +449,7 @@ export default class Dashboard extends Kiss {
                     name: name,
                     id: name,
                     type: 'column',
+                    lineWidth: 0.5,
                     color: "#79ff37",
                     data: this.serieData[name]
                 }
@@ -457,6 +463,7 @@ export default class Dashboard extends Kiss {
                     yAxis: 0,
                     name: name,
                     id: name,
+                    lineWidth: 0.5,
                     color: "#7b66fc",
                     data: this.serieData[name]
                 }
@@ -473,6 +480,7 @@ export default class Dashboard extends Kiss {
                     yAxis: 1,
                     name: group + " USD balance",
                     id: usdBalance,
+                    lineWidth: 0.5,
                     color: "#00880a",
                     data: this.serieData[usdBalance]
                 }
@@ -484,6 +492,7 @@ export default class Dashboard extends Kiss {
                     yAxis: 2,
                     name: group + "BTC balance",
                     id: btcBalance,
+                    lineWidth: 0.5,
                     color: "#bb9004",
                     data: this.serieData[btcBalance]
                 }
@@ -495,7 +504,8 @@ export default class Dashboard extends Kiss {
                     yAxis: 0,
                     id: buyAndSellLine,
                     name: group + " buy and sell line",
-                    color: "rgba(253,253,253,0.5)",
+                    color: "rgb(135,36,255)",
+                    lineWidth: 0.5,
                     data: this.serieData[buyAndSellLine]
                 }
             }
@@ -556,6 +566,7 @@ export default class Dashboard extends Kiss {
                         name: name,
                         id: name,
                         color: color,
+                        lineWidth: 0.5,
                         data: this.serieData[name]
                     }
                 }
@@ -563,20 +574,24 @@ export default class Dashboard extends Kiss {
         }
     }
 
-    seriesmouseOver(event) {
-        console.info("highchart series mouse over", this, event);
+    onSeriesMouseOver(event) {
+        //console.info("highchart series mouse over", this, event);
     }
 
-    chartLoad(event) {
-        console.error("highchart LOAD cool", this, event);
+    onChartLoad(event) {
+        console.error("highchart LOAD", this, event);
     }
 
-    chartRedraw(event) {
-        console.error("highchart REDRAW cool", this, event);
+    onChartRedraw(event) {
+        //console.error("highchart REDRAW", this, event);
     }
 
-    chartRender(event) {
-        console.error("highchart RENDER cool", this, event);
+    onChartRender(event) {
+        //console.info("highchart RENDER", this, event);
+    }
+
+    onSerieSetExtremes(event) {
+        console.info("highchart SET EXTREME", this, event);
     }
 
     parseData(result) {
@@ -773,7 +788,7 @@ export default class Dashboard extends Kiss {
 
     updateSeries() {
         for (let key in this.serieMap) {
-            this.chart.addSeries(this.serieMap[key]);
+            this.chart.addSeries(this.serieMap[key], false);
         }
         this.chart.redraw();
     }
@@ -791,18 +806,25 @@ export default class Dashboard extends Kiss {
             let data = this.serieData[serie.options.id];
             if (data !== undefined) {
                 if (serie.options.type !== "flags") {
-                    serie.setData(data);
+                    serie.setData(data, false, false);
                 } else {
                     if (range <= 1000 * 60 * 60 * 1) {
-
+                        //TODO remove point
+                        //https://api.highcharts.com/class-reference/Highcharts.Series%23setData#removePoint
                     }
                 }
             }
         }
-        this.chart.xAxis[0].setExtremes(this.minDate, this.maxDate);
+        this.chart.xAxis[0].setExtremes(this.minDate, this.maxDate, false);
+        this.chart.redraw();
 
 
         console.log("this is a global object", context.global);
+    }
+
+    updateAxis() {
+        this.chart.xAxis[0].setExtremes(this.minDate, this.maxDate, false, true);
+        this.chart.redraw();
     }
 
 
