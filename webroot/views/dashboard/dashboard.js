@@ -613,19 +613,7 @@ export default class Dashboard extends Kiss {
             for (let i in series) {
                 let serie = series[i];
                 if (serie.options.type === "flags") {
-                    if (range <= this.maxRangeForFlags) {
-                        let data = this.serieData[serie.options.id];
-                        if (data !== undefined) {
-                            let chunkedData = data.filter((point) => {
-                                return point.x >= event.userMin && point.x <= event.userMax;
-                            }).sort((pa, pb) => {
-                                return pa.x - pb.x
-                            });
-                            serie.setData(chunkedData, false, false);
-                        }
-                    } else {
-                        serie.setData([], false, false);
-                    }
+                    this.manageFlags(event.userMin, event.userMax, serie);
                 }
                 if (serie.options.id.endsWith(" buy And Sell Line")) {
                     if (range <= this.maxRangeForFlags) {
@@ -642,6 +630,22 @@ export default class Dashboard extends Kiss {
 
     }
 
+    manageFlags(min, max, serie) {
+        let range = max - min;
+        if (range <= this.maxRangeForFlags) {
+            let data = this.serieData[serie.options.id];
+            if (data !== undefined) {
+                let chunkedData = data.filter((point) => {
+                    return point.x >= min && point.x <= max;
+                }).sort((pa, pb) => {
+                    return pa.x - pb.x
+                });
+                serie.setData(chunkedData, false, false);
+            }
+        } else {
+            serie.setData([], false, false);
+        }
+    }
 
     parseData(result) {
 
@@ -688,23 +692,47 @@ export default class Dashboard extends Kiss {
             if (metaOhlc.indicators !== undefined) {
 
                 //return the values of ohlc at the inidcator index
+                /*
+                "metaIndicator": {
+                    "0": {
+                        "key": "price",
+                        "name": "order price",
+                        "group": "cheat v1",
+                        "type": "order"
+                    },
+                    "1": {
+                        "key": "quantity",
+                        "name": "order quantity",
+                        "group": "cheat v1",
+                        "type": "order"
+                    },
+                 */
                 let metaIndicatorValues = OHLC[i][metaOhlc.indicators.index];
                 let order = {};
+                let groupMap = {};
                 let foundOrders = false;
-                for (let key in metaIndicatorValues) {
-                    let group = metaIndicator[key].group;
-                    if (group !== undefined && group === "orders") {
-                        foundOrders = true;
-                        order[metaIndicator[key].key] = metaIndicatorValues[key];
+                for (let index in metaIndicatorValues) {
+                    let groupName = metaIndicator[index].group;
+                    let type = metaIndicator[index].type;
+                    if (groupName && type === "order") {
+                        if (!groupMap[groupName]) {
+                            //init a group obj per groupName
+                            groupMap[groupName] = {};
+                        }
+                        let group = groupMap[groupName];
+                        let attributeName = metaIndicator[index].key;
+                        group[attributeName] = metaIndicatorValues[index];
+                        groupMap[groupName] = group;
 
                     } else {
-                        this.parseIndicator(metaIndicatorValues[key], time, metaIndicator[key].name, group);
+                        this.parseIndicator(metaIndicatorValues[index], time, metaIndicator[index].name, groupName);
                     }
                 }
-                if (foundOrders === true) {
-                    //FIXME order prices are not equals to the time price or shifted(linked to BigDecimal prices)
-                    this.parseIndicator(order, time, "", "orders", "order");
+                for (let groupName in groupMap) {
+                    let group = groupMap[groupName];
+                    this.parseIndicator(group, time, groupName, groupName, "order");
                 }
+
             }
 
         }
@@ -724,6 +752,14 @@ export default class Dashboard extends Kiss {
         return point;
     }
 
+    /**
+     *
+     * @param pointValue
+     * @param time
+     * @param name
+     * @param group
+     * @param type
+     */
     parseIndicator(pointValue, time, name, group, type) {
         let point = [];
         if (type === "ohlc") {
@@ -847,7 +883,6 @@ export default class Dashboard extends Kiss {
         this.minDate = this.first;
         this.maxDate = this.first + range;
 
-
         let series = this.chart.series;
         for (let i in series) {
             let serie = series[i];
@@ -856,6 +891,8 @@ export default class Dashboard extends Kiss {
                 if (serie.options.type !== "flags") {
                     serie.setData(data, false, false);
                     //flags are displayed only when range changes after setExtrem
+                } else {
+
                 }
             }
         }
