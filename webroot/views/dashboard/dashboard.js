@@ -597,7 +597,7 @@ export default class Dashboard extends Kiss {
     }
 
     onChartRender(event) {
-        //console.info("highchart RENDER", this, event);
+        console.info("highchart RENDER", this, event);
     }
 
     onSerieSetExtremes(event) {
@@ -851,20 +851,15 @@ export default class Dashboard extends Kiss {
         let series = this.chart.series;
         for (let i in series) {
             let serie = series[i];
-            console.log("serie config : " + serie.options.id, serie);
             let data = this.serieData[serie.options.id];
             if (data !== undefined) {
                 if (serie.options.type !== "flags") {
                     serie.setData(data, false, false);
-                } else {
-                    if (range <= 1000 * 60 * 60 * 1) {
-                        //TODO remove point
-                        //https://api.highcharts.com/class-reference/Highcharts.Series%23setData#removePoint
-                    }
+                    //flags are displayed only when range changes after setExtrem
                 }
             }
         }
-        this.chart.xAxis[0].setExtremes(this.minDate, this.maxDate, false);
+        // this.chart.xAxis[0].setExtremes(this.minDate, this.maxDate, false);
         this.chart.redraw();
 
 

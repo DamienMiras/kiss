@@ -5,6 +5,7 @@ export default class Dashboardmenu extends Kiss {
         super(factory, parentKiss, element);
         this.last = 0;
         this.first = undefined;
+        this.firstBatch = true
 
 
     }
@@ -22,15 +23,16 @@ export default class Dashboardmenu extends Kiss {
     onMessageReceived(e, meta) {
         super.onMessageReceived(e, meta);
         if (meta.from.getName() === "dashboard" && meta.data === "loaded") {
-            this.fetchData({
-                last: 0,
-                limit: 4320
-            });
+            this.fetchData();
         }
     }
 
     fetchData(parameters) {
 
+        parameters = {
+            last: this.last,
+            limit: 4320
+        }
         let url = "/api/getOHLC?";
         for (const attr in parameters) {
             let value = parameters[attr];
@@ -43,7 +45,20 @@ export default class Dashboardmenu extends Kiss {
         fetch(url)
             .then(response => response.json())
             .then(result => {
-                this.postMessage(this, "dashboard", "ohlc", result);
+                if (result.last > this.last) {
+                    this.last = result.last;
+                    this.postMessage(this, "dashboard", "ohlc", result);
+                    if (this.firstBatch === true) {
+                        //dont use timer , because there is no garantie that the answer comes in the right order
+                        this.fetchData();
+                    }
+                } else if (this.last === result.last) {
+                    if (this.firstBatch === true) {
+                        clearInterval(this.timer);
+                        this.timer = setInterval(() => this.fetchData(), 1000 * 60);
+                        this.firstBatch = false;
+                    }
+                }
 
             })
             .catch((e) => {
