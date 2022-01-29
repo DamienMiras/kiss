@@ -18,7 +18,7 @@ export default class Kiss extends Peace {
         }
         this.factory = factory;
         this.bus = bus;
-        this.gloabl = global;
+        this.global = global;
         this.parentKiss = parentKiss;
 
         if (!element) {
