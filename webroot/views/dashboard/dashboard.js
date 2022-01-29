@@ -22,6 +22,18 @@ export default class Dashboard extends Kiss {
         this.maxRangeForFlags = 1000 * 60 * 60 * 4;
 
         this.chartOptions = {
+            chart: {
+                height: 1300,
+                margin: [0, 200, 40, 0],
+                borderWidth: 0.5,
+                borderColor: "rgba(255,255,255,0.50)",
+                styledMode: false,
+                events: {
+                    load: this.onChartLoad.bind(this),
+                    redraw: this.onChartRedraw.bind(this),
+                    render: this.onChartRender.bind(this)
+                },
+            },
             scrollbar: {
                 liveRedraw: false
             },
@@ -30,7 +42,6 @@ export default class Dashboard extends Kiss {
                 height: 40,
                 series: {
                     color: 'rgb(121,255,55,0.5)',
-                    //lineWidth: 0.5
                 }
             },
             rangeSelector: {
@@ -83,18 +94,7 @@ export default class Dashboard extends Kiss {
                 },*/
                 valueDecimals: 2
             },
-            chart: {
-                height: 1300,
-                margin: [0, 200, 40, 0],
-                borderWidth: 0.5,
-                borderColor: "rgba(255,255,255,0.50)",
-                styledMode: false,
-                events: {
-                    load: this.onChartLoad.bind(this),
-                    redraw: this.onChartRedraw.bind(this),
-                    render: this.onChartRender.bind(this)
-                },
-            },
+
             title: {
                 style: {
                     text: 'kraken XBTUSD 1m',
@@ -194,7 +194,7 @@ export default class Dashboard extends Kiss {
                 }, {
                     id: "btcBalance",
                     gridLineWidth: 0,
-                    dashstyle: 'longdash',
+                    dashStyle: 'LongDash',
                     title: {
                         text: 'BTC bal.',
                         align: 'high',
@@ -220,7 +220,7 @@ export default class Dashboard extends Kiss {
                 },
                 {
                     lineColor: '#ababab',
-                    lineWidth: 1,
+                    lineWidth: 0.5,
                     gridLineColor: '#ababab',
                     gridLineWidth: 0.5,
                     title: {
@@ -253,7 +253,7 @@ export default class Dashboard extends Kiss {
                     }
                 }, {
                     lineColor: '#ababab',
-                    lineWidth: 1,
+                    lineWidth: 0.5,
                     gridLineColor: '#ababab',
                     gridLineWidth: 0.5,
                     title: {
@@ -287,7 +287,7 @@ export default class Dashboard extends Kiss {
                 },
                 {
                     lineColor: '#ababab',
-                    lineWidth: 1,
+                    lineWidth: 0.5,
                     gridLineColor: '#ababab',
                     gridLineWidth: 0.5,
                     title: {
@@ -498,7 +498,7 @@ export default class Dashboard extends Kiss {
                     name: group + " BTC balance",
                     id: btcBalance,
                     lineWidth: 1,
-                    dashstyle: 'longdash',
+                    dashStyle: 'LongDash',
                     color: this.global.getNextColor(),//"#bb9004",
                     data: this.serieData[btcBalance]
                 }
