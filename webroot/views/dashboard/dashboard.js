@@ -194,7 +194,7 @@ export default class Dashboard extends Kiss {
                 }, {
                     id: "btcBalance",
                     gridLineWidth: 0,
-                    dashStyle: 'LongDash',
+
                     title: {
                         text: 'BTC bal.',
                         align: 'high',
@@ -486,6 +486,7 @@ export default class Dashboard extends Kiss {
                     name: group + " USD balance",
                     id: usdBalance,
                     lineWidth: 1,
+                    dashStyle: 'LongDashDotDot',
                     color: this.global.getNextColor(),//"#00880a",
                     data: this.serieData[usdBalance]
                 }
