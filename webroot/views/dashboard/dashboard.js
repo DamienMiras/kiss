@@ -485,9 +485,9 @@ export default class Dashboard extends Kiss {
                     yAxis: 1,
                     name: group + " USD balance",
                     id: usdBalance,
-                    lineWidth: 1,
-                    dashStyle: 'LongDashDotDot',
-                    color: this.global.getNextColor(),//"#00880a",
+                    lineWidth: 1.5,
+                    dashStyle: 'LongDash',
+                    color: this.global.getGreen(),//"#00880a",
                     data: this.serieData[usdBalance]
                 }
             }
@@ -498,9 +498,10 @@ export default class Dashboard extends Kiss {
                     yAxis: 2,
                     name: group + " BTC balance",
                     id: btcBalance,
-                    lineWidth: 1,
-                    dashStyle: 'LongDash',
-                    color: this.global.getNextColor(),//"#bb9004",
+                    lineWidth: 1.5,
+                    dashStyle: 'LongDashDotDot',
+                    //color:"#bb9004",
+                    color: this.global.getYello(),
                     data: this.serieData[btcBalance]
                 }
             }
@@ -511,7 +512,8 @@ export default class Dashboard extends Kiss {
                     yAxis: 0,
                     id: buyAndSellLine,
                     name: group + " buy and sell line",
-                    color: "rgb(135,36,255)",
+                    //color: "rgb(135,36,255)",
+                    color: this.global.getLavanda(),
                     lineWidth: 1,
                     data: this.serieData[buyAndSellLine]
                 }
