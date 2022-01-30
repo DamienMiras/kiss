@@ -50,7 +50,7 @@ export default class Dashboardmenu extends Kiss {
                     this.postMessage(this, "dashboard", "ohlc", result);
                     if (this.firstBatch === true) {
                         //dont use timer , because there is no garantie that the answer comes in the right order
-                        this.fetchData();
+                        //this.fetchData();
                     }
                 } else if (this.last === result.last) {
                     if (this.firstBatch === true) {

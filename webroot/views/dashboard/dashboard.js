@@ -366,16 +366,16 @@ export default class Dashboard extends Kiss {
             }
 
             let orders = {};
-            for (let key in metaIndicator) {
+            for (let index in metaIndicator) {
                 /**
                  * group "bot1orders" or "bot2orders"
                  * type  "order"
                  * name  "quantity"
                  * ror each group we create an order indexed by group value
                  */
-                let group = metaIndicator[key].group;
-                let type = metaIndicator[key].type;
-                let name = metaIndicator[key].name;
+                let group = metaIndicator[index].group;
+                let type = metaIndicator[index].type;
+                let name = metaIndicator[index].name;
                 if (name !== undefined && group !== undefined && type !== undefined && type === "order") {
                     if (orders.group === undefined) {
                         orders[group] = {name: "", group: ""};
@@ -693,39 +693,51 @@ export default class Dashboard extends Kiss {
 
                 //return the values of ohlc at the inidcator index
                 /*
-                "metaIndicator": {
-                    "0": {
-                        "key": "price",
-                        "name": "order price",
-                        "group": "cheat v1",
-                        "type": "order"
+                "metaIndicator": {<---------------------metaIndicator
+                    "0": {<-----------------------------metaIndicator[index]
+                        "key": "cheat v1 price",
+                        "name": "price",
+                        "group": "cheat v1",<-----------metaIndicator[index].group
+                        "type": "order"<----------------metaIndicator[index].type
                     },
                     "1": {
-                        "key": "quantity",
-                        "name": "order quantity",
+                        "key": "cheat v1 quantity",
+                        "name": "quantity",
                         "group": "cheat v1",
                         "type": "order"
                     },
                  */
-                let metaIndicatorValues = OHLC[i][metaOhlc.indicators.index];
-                let order = {};
+                /*
+                "OHLC": [
+                    [<----------------------------------OHLC[i]
+                        1638001680000,<-----------------time
+                        55152.6,
+                        {<------------------------------values = OHLC[i][metaOhlc.indicators.index];
+                            "0": "55152.6",
+                            "1"<------------------------metaOhlc.indicators.index
+                            "2": "b",<------------------values[index];
+                            "3": "9999.99918426"<-------values[3];
+                        }
+                 */
+                let values = OHLC[i][metaOhlc.indicators.index];
                 let groupMap = {};
-                let foundOrders = false;
-                for (let index in metaIndicatorValues) {
+                for (let index in values) {
                     let groupName = metaIndicator[index].group;
                     let type = metaIndicator[index].type;
+                    let name = metaIndicator[index].name;
+                    let value = values[index];
                     if (groupName && type === "order") {
                         if (!groupMap[groupName]) {
                             //init a group obj per groupName
                             groupMap[groupName] = {};
                         }
                         let group = groupMap[groupName];
-                        let attributeName = metaIndicator[index].key;
-                        group[attributeName] = metaIndicatorValues[index];
+
+                        group[name] = value
                         groupMap[groupName] = group;
 
                     } else {
-                        this.parseIndicator(metaIndicatorValues[index], time, metaIndicator[index].name, groupName);
+                        this.parseIndicator(value, time, name, groupName);
                     }
                 }
                 for (let groupName in groupMap) {
@@ -756,7 +768,7 @@ export default class Dashboard extends Kiss {
      *
      * @param pointValue
      * @param time
-     * @param name
+     * @param nameF
      * @param group
      * @param type
      */
