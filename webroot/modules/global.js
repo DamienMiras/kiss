@@ -1,4 +1,5 @@
 import Counter from "./counter.js";
+import Rgb from "./rgb.js"
 
 export default class Global {
     constructor() {
@@ -7,9 +8,9 @@ export default class Global {
         this.black = 0;
         this.white = 255;
         this.cache = {};
-        let incr = 5;
-        this.yello = new Counter(incr, 150, 255);
-        this.green = new Counter(incr, 125, 255);
+        let incr = 50;
+        this.yello = new Counter(incr, 0, 100);
+        this.green = new Counter(incr, 0, 100);
         this.lavanda = new Counter(incr, 0, 100);
 
     }
@@ -20,27 +21,36 @@ export default class Global {
     }
 
     getYello() {
-        let color = this.yello.next();
-        return "rgb(" + color + "," + color + "," + 10 + ")";
+        "rgb(252,238,105)";
+        "rgb(255,115,0)";
+        return this.gradient(new Rgb(252, 238, 105), new Rgb(255, 115, 0), this.yello);
     }
 
     getGreen() {
-        let color = this.green.next();
-        return "rgb(" + 0 + "," + color + "," + 0 + ")";
+        "rgb(0,93,65)";
+        "rgb(143,255,51)";
+        return this.gradient(new Rgb(0, 126, 35), new Rgb(143, 255, 51), this.green);
     }
 
     getLavanda() {
         //TODO make a module for color management with hsl
-        //get gradient
-        let ff
-        ff = "rgb(191,148,255)";
-        ff = "rgb(117,0,255)";
-
-        let r = 191 - Math.floor((191 - 117) * this.lavanda.next() / 100);
-        let g = 148 - Math.floor((148 - 0) * this.lavanda.next() / 100);
-        let b = 255;
-        return "rgb(" + r + "," + g + "," + b + ")";
+        //TODO convert color from string to Rgb
+        "rgb(102,0,253)";
+        "rgb(255,0,242)";
+        return this.gradient(new Rgb(102, 0, 253), new Rgb(255, 0, 242), this.lavanda);
     }
+
+    gradient(from, to, counter) {
+        let amount = counter.next();
+        new Rgb();
+        let rgb = new Rgb(
+            from.r - Math.floor((from.r - to.r) * amount / 100),
+            from.g - Math.floor((from.g - to.g) * amount / 100),
+            from.b - Math.floor((from.b - to.b) * amount / 100),
+        )
+        return rgb.toString();
+    }
+
 
     getNextColor() {
 

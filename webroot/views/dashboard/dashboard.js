@@ -483,7 +483,7 @@ export default class Dashboard extends Kiss {
                 this.serieData[usdBalance] = [];
                 this.serieMap[usdBalance] = {
                     yAxis: 1,
-                    name: group + " USD balance",
+                    name: "[" + group + "] USD balance",
                     id: usdBalance,
                     lineWidth: 1.5,
                     dashStyle: 'LongDash',
@@ -496,7 +496,7 @@ export default class Dashboard extends Kiss {
                 this.serieData[btcBalance] = [];
                 this.serieMap[btcBalance] = {
                     yAxis: 2,
-                    name: group + " BTC balance",
+                    name: "[" + group + "]  BTC balance",
                     id: btcBalance,
                     lineWidth: 1.5,
                     dashStyle: 'LongDashDotDot',
@@ -511,7 +511,7 @@ export default class Dashboard extends Kiss {
                 this.serieMap[buyAndSellLine] = {
                     yAxis: 0,
                     id: buyAndSellLine,
-                    name: group + " buy and sell line",
+                    name: "[" + group + "]  buy and sell line",
                     //color: "rgb(135,36,255)",
                     color: this.global.getLavanda(),
                     lineWidth: 1,
@@ -532,7 +532,7 @@ export default class Dashboard extends Kiss {
                     x: -8,
                     onSeries: buyAndSellLine,
                     id: buyAndSellFlags,
-                    name: group + "buy and sell orders",
+                    name: "[" + group + "] buy and sell orders",
                     //     color: "#a0ff31",
                     //     fillColor: "#a0ff31",
                     grouping: false,
