@@ -24,7 +24,7 @@ export default class Dashboardmenu extends Kiss {
             this.postMessage(this, "dashboard", "rangeSelect", {range: 24});
         }.bind(this);
         document.getElementById("hour").onclick = function () {
-            this.postMessage(this, "dashboard", "rangeSelect", {range: 2});
+            this.postMessage(this, "dashboard", "rangeSelect", {range: 4});
         }.bind(this);
 
     }

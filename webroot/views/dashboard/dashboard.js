@@ -246,7 +246,7 @@ export default class Dashboard extends Kiss {
                     offset: 0,
                     color: "#ffe57f",
                     top: '70%',
-                    height: '10%',
+                    height: '15%',
                     marker: {
                         enabled: true
                     },
@@ -279,8 +279,8 @@ export default class Dashboard extends Kiss {
                     },
                     offset: 0,
                     color: "#ffe57f",
-                    top: '80%',
-                    height: '20%',
+                    top: '85%',
+                    height: '15%',
                     marker: {
                         enabled: true
                     },
@@ -380,8 +380,8 @@ export default class Dashboard extends Kiss {
                 this.serieData[type] = [];
                 this.serieMap[type] = {
                     yAxis: 0,
-                    type: 'heikinashi',
-                    //type: 'candlestick',
+                    //type: 'heikinashi',
+                    type: 'candlestick',
                     name: name,
                     id: type,
                     data: this.serieData[type]
@@ -556,70 +556,6 @@ export default class Dashboard extends Kiss {
         }
     }
 
-    onSeriesMouseOver(event) {
-        //console.info("highchart series mouse over", this, event);
-    }
-
-    onChartLoad(event) {
-        this.l("highchart LOAD", this, event);
-        this.postMessage(this, "dashboard_menu", "status", "loaded");
-    }
-
-    onChartRedraw(event) {
-        //console.error("highchart REDRAW", this, event);
-    }
-
-    onChartRender(event) {
-        //console.info("highchart RENDER", this, event);
-    }
-
-    onSerieSetExtremes(event) {
-
-        if (event.userMax === undefined || event.userMin === undefined) {
-            return;
-        }
-        this.debounce(() => {
-
-            let range = event.userMax - event.userMin;
-
-            let series = this.chart.series;
-            for (let i in series) {
-                let serie = series[i];
-                if (serie.options.type === "flags") {
-                    this.manageFlags(event.userMin, event.userMax, serie);
-                }
-                if (serie.options.id.endsWith(" buy And Sell Line")) {
-                    if (range <= this.maxRangeForFlags) {
-                        //.visible = true/false doesnt works of course
-                        serie.opacity = 1;
-                    } else {
-                        serie.opacity = 0;
-                    }
-                }
-            }
-            this.chart.redraw();
-        }, 400)();
-
-
-    }
-
-    manageFlags(min, max, serie) {
-        let range = max - min;
-        if (range <= this.maxRangeForFlags) {
-            let data = this.serieData[serie.options.id];
-            if (data !== undefined) {
-                let chunkedData = data.filter((point) => {
-                    return point.x >= min && point.x <= max;
-                }).sort((pa, pb) => {
-                    return pa.x - pb.x
-                });
-                console.info("display flags");
-                serie.setData(chunkedData, false, false);
-            }
-        } else {
-            serie.setData([], false, false);
-        }
-    }
 
     parseData(result) {
 
@@ -898,6 +834,72 @@ export default class Dashboard extends Kiss {
         this.maxDate = this.minDate + this.range;
         this.updateSelectedRange();
 
+    }
+
+
+    onSeriesMouseOver(event) {
+        //console.info("highchart series mouse over", this, event);
+    }
+
+    onChartLoad(event) {
+        this.l("highchart LOAD", this, event);
+        this.postMessage(this, "dashboard_menu", "status", "loaded");
+    }
+
+    onChartRedraw(event) {
+        //console.error("highchart REDRAW", this, event);
+    }
+
+    onChartRender(event) {
+        //console.info("highchart RENDER", this, event);
+    }
+
+    onSerieSetExtremes(event) {
+
+        if (event.userMax === undefined || event.userMin === undefined) {
+            return;
+        }
+        this.debounce(() => {
+
+            let range = event.userMax - event.userMin;
+
+            let series = this.chart.series;
+            for (let i in series) {
+                let serie = series[i];
+                if (serie.options.type === "flags") {
+                    this.manageFlags(event.userMin, event.userMax, serie);
+                }
+                if (serie.options.id.endsWith(" buy And Sell Line")) {
+                    if (range <= this.maxRangeForFlags) {
+                        //.visible = true/false doesnt works of course
+                        serie.opacity = 1;
+                    } else {
+                        serie.opacity = 0;
+                    }
+                }
+            }
+            this.chart.redraw();
+        }, 400)();
+
+
+    }
+
+    manageFlags(min, max, serie) {
+        let range = max - min;
+        if (range <= this.maxRangeForFlags) {
+            let data = this.serieData[serie.options.id];
+            if (data !== undefined) {
+                let chunkedData = data.filter((point) => {
+                    return point.x >= min && point.x <= max;
+                }).sort((pa, pb) => {
+                    return pa.x - pb.x
+                });
+                console.info("display flags");
+                serie.setData(chunkedData, false, false);
+            }
+        } else {
+            serie.setData([], false, false);
+        }
     }
 
 }
