@@ -221,6 +221,7 @@ export default class Dashboard extends Kiss {
                     }
                 },
                 {
+                    id: "macd",
                     lineColor: '#ababab',
                     lineWidth: 0.5,
                     gridLineColor: '#ababab',
@@ -422,7 +423,7 @@ export default class Dashboard extends Kiss {
             if (this.serieMap[name] === undefined) {
                 this.serieData[name] = [];
                 this.serieMap[name] = {
-                    yAxis: 5,
+                    yAxis: 4,
                     name: name,
                     id: name,
                     type: 'column',
