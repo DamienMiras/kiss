@@ -19,11 +19,13 @@ export default class Dashboard extends Kiss {
         this.maxDate = undefined // new Date().getMilliseconds();
         this.seriesMinDate = undefined;
         this.seriesMaxDate = undefined;
-        this.maxRangeForFlags = 1000 * 60 * 60 * 4;
-
+        this.range = 1000 * 60 * 60 * 72;
+        this.maxRangeForFlags = 1000 * 60 * 60 * 24;
+        let height = 1300;
+        let navigatorTop = height - 119;
         this.chartOptions = {
             chart: {
-                height: 1300,
+                height: height,
                 margin: [0, 200, 40, 0],
                 borderWidth: 0.5,
                 borderColor: "rgba(255,255,255,0.50)",
@@ -38,7 +40,7 @@ export default class Dashboard extends Kiss {
                 liveRedraw: false
             },
             navigator: {
-                top: 1181,
+                top: navigatorTop,
                 height: 40,
                 series: {
                     color: 'rgb(121,255,55,0.5)',
@@ -75,7 +77,7 @@ export default class Dashboard extends Kiss {
                 useHTML: true,
                 headerFormat: '<table><tr><th colspan="3">{point.key}</th></tr>',
                 pointFormat:
-                    '<tr><td style="color: {series.color}">{series.name}  {series.color} </td>' +
+                    '<tr><td style="color: {series.color}">{series.name}  </td>' +
                     '<td style="color: {series.color};text-align: right;">' +
                     'open <b>{point.open}</b> high <b>{point.high}</b>  low <b>{point.low}</b>  close <b>{point.close}</b> ' +
                     '</td>' +
@@ -251,39 +253,6 @@ export default class Dashboard extends Kiss {
                     resize: {
                         enabled: true
                     }
-                }, {
-                    lineColor: '#ababab',
-                    lineWidth: 0.5,
-                    gridLineColor: '#ababab',
-                    gridLineWidth: 0.5,
-                    title: {
-                        align: 'high',
-                        y: 10,
-                        x: 35,
-                        text: 'MACD long',
-                        style: {
-                            color: '#ffffff'
-                        }
-                    },
-                    labels: {
-                        align: 'right',
-                        x: 36,
-                        y: 5,
-                        style: {
-                            color: '#ffffff'
-                        }
-                    },
-                    offset: 0,
-                    color: "#ffe57f",
-                    top: '80%',
-                    height: '5%',
-                    marker: {
-                        enabled: true
-                    },
-                    grouping: false,
-                    resize: {
-                        enabled: true
-                    }
                 },
                 {
                     lineColor: '#ababab',
@@ -309,8 +278,8 @@ export default class Dashboard extends Kiss {
                     },
                     offset: 0,
                     color: "#ffe57f",
-                    top: '85%',
-                    height: '15%',
+                    top: '80%',
+                    height: '20%',
                     marker: {
                         enabled: true
                     },
@@ -335,6 +304,9 @@ export default class Dashboard extends Kiss {
         super.onMessageReceived(e, meta);
         if (meta.type === "ohlc") {
             this.onOhlcRecieved(meta.data);
+        }
+        if (meta.type === "rangeSelect") {
+            this.selectRange(meta.data);
         }
     }
 
@@ -597,7 +569,7 @@ export default class Dashboard extends Kiss {
     }
 
     onChartRender(event) {
-        console.info("highchart RENDER", this, event);
+        //console.info("highchart RENDER", this, event);
     }
 
     onSerieSetExtremes(event) {
@@ -640,6 +612,7 @@ export default class Dashboard extends Kiss {
                 }).sort((pa, pb) => {
                     return pa.x - pb.x
                 });
+                console.info("display flags");
                 serie.setData(chunkedData, false, false);
             }
         } else {
@@ -807,8 +780,8 @@ export default class Dashboard extends Kiss {
 
         } else if (type === "order") {
 
-            let usdBalance = group + " usdBalance";
-            let btcBalance = group + " btcBalance";
+            let usdBalanceGroup = group + " usdBalance";
+            let btcBalanceGroup = group + " btcBalance";
             let buyAndSellLine = group + " buy And Sell Line";
             let buyAndSellFlags = group + " buy And Sell flags";
 
@@ -816,17 +789,19 @@ export default class Dashboard extends Kiss {
             let price = parseFloat(pointValue.price);
 
             if (pointValue.type === "s") {
+                let quantity = parseFloat(pointValue.usdBalance);
                 point = [];
                 point.push(time);
                 point.push(quantity);
-                this.serieData[usdBalance].push(point);
+                this.serieData[usdBalanceGroup].push(point);
             }
 
             if (pointValue.type === "b") {
+                let quantity = parseFloat(pointValue.btcBalance);
                 point = [];
                 point.push(time);
                 point.push(quantity);
-                this.serieData[btcBalance].push(point);
+                this.serieData[btcBalanceGroup].push(point);
             }
 
 
@@ -891,9 +866,8 @@ export default class Dashboard extends Kiss {
     }
 
     updateData() {
-        let range = 1000 * 60 * 60 * 4;
         this.minDate = this.first;
-        this.maxDate = this.first + range;
+        this.maxDate = this.first + this.range;
 
         let series = this.chart.series;
         for (let i in series) {
@@ -903,8 +877,6 @@ export default class Dashboard extends Kiss {
                 if (serie.options.type !== "flags") {
                     serie.setData(data, false, false);
                     //flags are displayed only when range changes after setExtrem
-                } else {
-
                 }
             }
         }
@@ -912,14 +884,20 @@ export default class Dashboard extends Kiss {
         this.chart.redraw();
 
 
-        console.log("this is a global object", context.global);
+        // console.log("this is a global object", context.global);
     }
 
-    updateAxis() {
+    updateSelectedRange() {
         this.chart.xAxis[0].setExtremes(this.minDate, this.maxDate, false, true);
         this.chart.redraw();
     }
 
+    selectRange(data) {
+        this.range = 1000 * 60 * 60 * data.range;
+        this.maxDate = this.minDate + this.range;
+        this.updateSelectedRange();
+
+    }
 
 }
 
