@@ -9,21 +9,28 @@ export default class Global {
         this.white = 255;
         this.cache = {};
         let incr = 50;
-        this.yello = new Counter(incr, 0, 100);
+        this.yellow = new Counter(incr, 0, 100);
         this.green = new Counter(incr, 0, 100);
         this.lavanda = new Counter(incr, 0, 100);
+        this.rainbow = new Counter(2, 0, 100);
 
     }
 
+
+    getRainbow() {
+        "rgb(194,255,0)";
+        "rgb(255,1,204)";
+        return this.gradient(new Rgb(194, 255, 0), new Rgb(255, 1, 204), this.rainbow);
+    }
 
     rand(min, max) { // min and max included
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
-    getYello() {
+    getYellow() {
         "rgb(252,238,105)";
         "rgb(255,115,0)";
-        return this.gradient(new Rgb(252, 238, 105), new Rgb(255, 115, 0), this.yello);
+        return this.gradient(new Rgb(252, 238, 105), new Rgb(255, 115, 0), this.yellow);
     }
 
     getGreen() {

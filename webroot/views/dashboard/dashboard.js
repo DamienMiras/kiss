@@ -161,7 +161,7 @@ export default class Dashboard extends Kiss {
                         y: 5,
                         style: {
                             color: '#fffdfe'
-                        }
+                        },
                     },
                     height: '70%',
                     resize: {
@@ -196,7 +196,6 @@ export default class Dashboard extends Kiss {
                 }, {
                     id: "btcBalance",
                     gridLineWidth: 0,
-
                     title: {
                         text: 'BTC bal.',
                         align: 'high',
@@ -250,12 +249,17 @@ export default class Dashboard extends Kiss {
                     marker: {
                         enabled: true
                     },
-                    grouping: false,
                     resize: {
                         enabled: true
+                    },
+                    dataGrouping: {
+                        enabled: false
                     }
                 },
                 {
+                    dataGrouping: {
+                        enabled: false
+                    },
                     lineColor: '#ababab',
                     lineWidth: 0.5,
                     gridLineColor: '#ababab',
@@ -398,7 +402,7 @@ export default class Dashboard extends Kiss {
                     yAxis: 0,
                     name: name,
                     id: name,
-                    color: "#c2ff00",
+                    color: this.global.getRainbow(),
                     lineWidth: 1,
                     data: this.serieData[name]
                 }
@@ -474,7 +478,7 @@ export default class Dashboard extends Kiss {
                     lineWidth: 1.5,
                     dashStyle: 'LongDashDotDot',
                     //color:"#bb9004",
-                    color: this.global.getYello(),
+                    color: this.global.getYellow(),
                     data: this.serieData[btcBalance]
                 }
             }
@@ -521,7 +525,7 @@ export default class Dashboard extends Kiss {
             if (this.macdGroup[group] === undefined) {
                 this.macdGroup[group] = this.axisIndex++;
             }
-            if (name.endsWith("histogram")) {
+            if (type === "histogram") {
                 if (this.serieMap[name] === undefined) {
                     this.serieData[name] = [];
                     this.serieMap[name] = {
@@ -831,7 +835,11 @@ export default class Dashboard extends Kiss {
 
     selectRange(data) {
         this.range = 1000 * 60 * 60 * data.range;
+
         this.maxDate = this.minDate + this.range;
+        if (this.last < this.maxDate) {
+            this.minDate = this.last - this.range;
+        }
         this.updateSelectedRange();
 
     }
@@ -860,8 +868,9 @@ export default class Dashboard extends Kiss {
             return;
         }
         this.debounce(() => {
-
-            let range = event.userMax - event.userMin;
+            this.minDate = event.userMin;
+            this.maxDate = event.userMax;
+            this.range = event.userMax - event.userMin;
 
             let series = this.chart.series;
             for (let i in series) {
@@ -870,7 +879,7 @@ export default class Dashboard extends Kiss {
                     this.manageFlags(event.userMin, event.userMax, serie);
                 }
                 if (serie.options.id.endsWith(" buy And Sell Line")) {
-                    if (range <= this.maxRangeForFlags) {
+                    if (this.range <= this.maxRangeForFlags) {
                         //.visible = true/false doesnt works of course
                         serie.opacity = 1;
                     } else {
