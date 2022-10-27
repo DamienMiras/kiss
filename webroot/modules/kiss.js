@@ -5,18 +5,10 @@ import Global from "./global.js";
 
 let global = new Global();
 export default class Kiss extends Peace {
-    constructor(factory, parentKiss, element) {
+    constructor(parentKiss, element) {
         super();
 
-        if (!factory) {
-            this.e("factory is null... makes sure to call super with all args factory, parent, element : \n" +
-                "export default class MyClass extends Kiss {\n" +
-                "    constructor(factory, parentKiss, element) {\n" +
-                "        super(factory, parentKiss, element);\n" +
-                "    }\n" +
-                "}");
-        }
-        this.factory = factory;
+
         this.bus = bus;
         this.global = global;
         this.parentKiss = parentKiss;
@@ -123,56 +115,42 @@ export default class Kiss extends Peace {
                 let kissName = kiss.tagName.toLowerCase();
                 this.v("found a kiss tag named [" + kissName, "] current  :", this.element, "parent:", parentElement);
 
-                if (this.factory[kissName]) {
-                    let kissView = new this.factory[kissName](this.factory, this, kiss);
-                    try {
-                        return kissView.load();
-                    } catch (e) {
-                        this.e("Kiss.load() error ", e);
-                        return Promise.reject();
-                    }
-                } else {
-                    let className = this.capitalizeFirstLetter(kissName);
-                    let modulePath = "../views/" + kissName + "/" + kissName + ".js";
-                    promises.push(
-                        import(modulePath)
-                            .then(obj => {
-                                this.l("import " + className, obj);
 
-                                let kissView = new obj.default(this.factory, this, kiss);
-                                try {
-                                    let result = kissView.load();
+                let className = this.capitalizeFirstLetter(kissName);
+                let modulePath = "../views/" + kissName + "/" + kissName + ".js";
+                promises.push(
+                    import(modulePath)
+                        .then(obj => {
+                            this.l("import " + className, obj);
 
-                                    return result.then(result => {
-                                        this.l("load ok  ", kissName, result);
-                                        return result;
-                                    }).catch(e => {
-                                        this.e("load error ", kissName, e);
-                                        return Promise.reject();
-                                    });
+                            let kissView = new obj.default(this, kiss);
+                            try {
+                                let result = kissView.load();
 
-                                } catch (e) {
-                                    this.e("Kiss.load() error ", e);
+                                return result.then(result => {
+                                    this.l("load ok  ", kissName, result);
+                                    return result;
+                                }).catch(e => {
+                                    this.e("load error ", kissName, e);
                                     return Promise.reject();
-                                }
+                                });
 
-                            })
-                            .catch(err => {
-                                this.e("import error " + className, err);
+                            } catch (e) {
+                                this.e("Kiss.load() error ", e);
                                 return Promise.reject();
-                            })
-                    );
+                            }
 
+                        })
+                        .catch(err => {
+                            this.e("import error " + className, err);
+                            return Promise.reject();
+                        })
+                );
 
-                    //new Kiss(this.factory, this, kiss);
-                }
-                //FIXME should return a promise, to be sure to laoad all the tree before pretent it is loaded
-                //use promise all
             }
             if (promises.length > 0) {
                 return Promise.all(promises).then(values => {
                     try {
-
                         for (let kiss of values) {
                             if (kiss) {
                                 kiss.onLoaded();

@@ -9,14 +9,7 @@ window.onload = () => {
     console.log("------------------------------------on loaaad-----------------------------------------------------------------s")
 
 
-    let factory = {
-        //"app": App,
-        // "dashboard": Dashboard,
-        // "navigation": Navigation,
-        // "header": Header,
-        // "dashboard_menu": DashboardMenu
-    }
-    window.context.global = new Kiss(factory);
+    window.context.global = new Kiss();
     window.context.global.load();
     console.log("this is a global object", context.global);
 

@@ -1,8 +1,8 @@
 import Kiss from "../../modules/kiss.js";
 
 export default class Dashboard extends Kiss {
-    constructor(factory, parentKiss, element) {
-        super(factory, parentKiss, element);
+    constructor(parentKiss, element) {
+        super(parentKiss, element);
         //TODO move the tooltips
         //TODO sometimes graph does not expands
         //TODO load only the flag for 4 hours

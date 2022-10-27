@@ -1,16 +1,13 @@
 import Kiss from "../../modules/kiss.js";
 
 export default class Dashboard_menu extends Kiss {
-    constructor(factory, parentKiss, element) {
-        super(factory, parentKiss, element);
-
-
+    constructor(parentKiss, element) {
+        super(parentKiss, element);
     }
 
 
     onLoaded() {
         super.onLoaded();
-
     }
 
 
