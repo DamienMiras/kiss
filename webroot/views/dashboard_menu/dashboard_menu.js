@@ -1,6 +1,6 @@
 import Kiss from "../../modules/kiss.js";
 
-export default class Dashboardmenu extends Kiss {
+export default class Dashboard_menu extends Kiss {
     constructor(factory, parentKiss, element) {
         super(factory, parentKiss, element);
         this.last = 0;
@@ -40,14 +40,14 @@ export default class Dashboardmenu extends Kiss {
 
     onMessageReceived(e, meta) {
         super.onMessageReceived(e, meta);
-        if (meta.from.getName() === "dashboard" && meta.data === "loaded") {
+        if (meta.to === this.getName() && meta.data === "loaded") {
             this.fetchData();
         }
     }
 
     fetchData(parameters) {
 
-        if (this.stop == true) {
+        if (this.stop === true) {
             return;
         }
         parameters = {
@@ -66,7 +66,7 @@ export default class Dashboardmenu extends Kiss {
         fetch(url)
             .then(response => response.json())
             .then(result => {
-                if (this.stop == true) {
+                if (this.stop === true) {
                     return;
                 }
                 console.info("stp", this.stop)
@@ -75,7 +75,7 @@ export default class Dashboardmenu extends Kiss {
                     this.postMessage(this, "dashboard", "ohlc", result);
                     if (this.firstBatch === true) {
                         //dont use timer , because there is no garantie that the answer comes in the right order
-                        if (this.stop == false) {
+                        if (this.stop === false) {
                             this.fetchData();
                         }
                     }

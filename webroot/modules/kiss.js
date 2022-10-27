@@ -30,13 +30,9 @@ export default class Kiss extends Peace {
 
         this.bus.on("kiss." + this.name, this.onBroadcastMessage.bind(this));
 
-        try {
-            this.load();
-        } catch (e) {
-            this.e("Kiss.load() error ", e);
-        }
+
         //TODO set as global, to get it from the console
-        this.visualDebug = false;
+        this.visualDebug = true;
     }
 
 
@@ -86,13 +82,20 @@ export default class Kiss extends Peace {
 
     onError(url, error) {
         this.e("fetch error " + url, this, error);
+        return Promise.reject();
     }
 
     onData(url, data) {
         this.l("data success " + url, this, data);
+        return Promise.resolve(true);
     }
 
     onFile(url, text) {
+        return Promise.resolve(true);
+    }
+
+    capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
 
@@ -115,47 +118,76 @@ export default class Kiss extends Peace {
                 parentElement = this.parentKiss.getName();
             }
             let kisses = this.element.querySelectorAll('.kiss');
+            let promises = [];
             for (let kiss of kisses) {
                 let kissName = kiss.tagName.toLowerCase();
                 this.v("found a kiss tag named [" + kissName, "] current  :", this.element, "parent:", parentElement);
 
                 if (this.factory[kissName]) {
-                    new this.factory[kissName](this.factory, this, kiss);
+                    let kissView = new this.factory[kissName](this.factory, this, kiss);
+                    try {
+                        return kissView.load();
+                    } catch (e) {
+                        this.e("Kiss.load() error ", e);
+                        return Promise.reject();
+                    }
                 } else {
-                    new Kiss(this.factory, this, kiss);
+                    let className = this.capitalizeFirstLetter(kissName);
+                    let modulePath = "../views/" + kissName + "/" + kissName + ".js";
+                    promises.push(
+                        import(modulePath)
+                            .then(obj => {
+                                this.l("import " + className, obj);
+
+                                let kissView = new obj.default(this.factory, this, kiss);
+                                try {
+                                    let result = kissView.load();
+
+                                    return result.then(result => {
+                                        this.l("load ok  ", kissName, result);
+                                        return result;
+                                    }).catch(e => {
+                                        this.e("load error ", kissName, e);
+                                        return Promise.reject();
+                                    });
+
+                                } catch (e) {
+                                    this.e("Kiss.load() error ", e);
+                                    return Promise.reject();
+                                }
+
+                            })
+                            .catch(err => {
+                                this.e("import error " + className, err);
+                                return Promise.reject();
+                            })
+                    );
+
+
+                    //new Kiss(this.factory, this, kiss);
                 }
                 //FIXME should return a promise, to be sure to laoad all the tree before pretent it is loaded
                 //use promise all
             }
-            try {
-                this.onLoaded();
-                this.l("kiss loaded");
-            } catch (e) {
-                this.e(e);
+            if (promises.length > 0) {
+                return Promise.all(promises).then(values => {
+                    try {
+                        this.onLoaded();
+                        this.l("kiss childs loaded", values);
+                    } catch (e) {
+                        this.e(e);
+                    }
+                    return Promise.resolve(true);
+                }).catch(err => {
+                    this.e("loading error " + this.name, err);
+                    return Promise.reject();
+                });
+            } else {
+                return Promise.resolve(true);
             }
+
 
         }
-
-        this.getContent(
-            htmlUri,
-            (url, content) => {
-                this.element.innerHTML = content;
-                return loadAllkisses();
-            },
-            (url, error) => {
-                let rend = this.render();
-                if (rend !== undefined && rend !== '') {
-                    this.element.innerHTML = rend;
-                    this.l("no kiss html file found, so render with render() ", url, error);
-                    return loadAllkisses();
-
-                } else {
-                    this.e("<" + this.names + ' class=".kiss"> has been found but there is any file nor a content returned by render().' +
-                        ' you could makes render() returning html content, or create the folowing file with non empty content ', htmlUri)
-                }
-            }
-        );
-
         if (!document.getElementById(this.name + "Css")) {
             this.getHead(
                 htmlUri,
@@ -170,6 +202,30 @@ export default class Kiss extends Peace {
                 });
 
         }
+
+        return this.getContent(
+            htmlUri,
+            (url, content) => {
+                this.element.innerHTML = content;
+                return loadAllkisses();
+            },
+            (url, error) => {
+                let rend = this.render();
+                if (rend !== undefined && rend !== '') {
+                    this.element.innerHTML = rend;
+                    this.l("no kiss html file found, so render with render() ", url, error);
+                    return loadAllkisses();
+
+                } else {
+                    this.e("<" + this.names + ' class=".kiss"> has been found but there is any file nor a content returned by render().' +
+                        ' you could makes render() returning html content, or create the folowing file with non empty content ', htmlUri);
+                    //TODO return load Service;
+                    return Promise.resolve(true);
+                }
+            }
+        );
+
+
     }
 
     onLoaded() {
@@ -196,7 +252,7 @@ export default class Kiss extends Peace {
     }
 
     onMessageReceived(e, meta) {
-        this.l(this.name + " recevieved a message type[" + meta.type + "] from " + meta.from.getName(), meta.data, e);
+        this.l(this.name + " recevieved a message type[" + meta.type + "] from [" + meta.from.getName() + "]", meta, e);
     }
 
     postMessage(from, to, type, data) {
@@ -204,7 +260,8 @@ export default class Kiss extends Peace {
         this.bus.trigger("kiss." + to, {
             type: type,
             data: data,
-            from: from
+            from: from,
+            to: to
         });
     }
 
