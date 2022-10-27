@@ -1,4 +1,4 @@
-let bus = $("app");
+//let bus = $("app");
 import Peace from './peace.js';
 import Global from "./global.js";
 
@@ -9,7 +9,7 @@ export default class Kiss extends Peace {
         super();
 
 
-        this.bus = bus;
+        this.bus = document.getElementsByTagName("app")[0];
         this.global = global;
         this.parentKiss = parentKiss;
 
@@ -20,7 +20,9 @@ export default class Kiss extends Peace {
         }
         this.name = this.element.tagName.toLowerCase();
 
-        this.bus.on("kiss." + this.name, this.onBroadcastMessage.bind(this));
+        // this.bus.on("kiss." + this.name, this.onBroadcastMessage.bind(this));
+
+        this.bus.addEventListener("kiss." + this.name, this.onBroadcastMessage.bind(this));
 
 
         //TODO set as global, to get it from the console
@@ -230,8 +232,8 @@ export default class Kiss extends Peace {
 
     onBroadcastMessage(e, data) {
 
-        if (e.type === "kiss" && e.namespace === this.name) {
-            this.onMessageReceived(e, data)
+        if (e.type === "kiss." + this.name) {
+            this.onMessageReceived(e, e.detail);
         }
     }
 
@@ -241,12 +243,16 @@ export default class Kiss extends Peace {
 
     postMessage(from, to, type, data) {
 
-        this.bus.trigger("kiss." + to, {
-            type: type,
-            data: data,
-            from: from,
-            to: to
-        });
+        this.bus.dispatchEvent(new CustomEvent("kiss." + to, {
+                    detail: {
+                        type: type,
+                        data: data,
+                        from: from,
+                        to: to
+                    }
+                }
+            )
+        );
     }
 
 }
