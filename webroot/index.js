@@ -1,5 +1,4 @@
 import Kiss from "./modules/kiss.js";
-import App from "./views/app/app.js";
 
 
 window.context = {
@@ -11,7 +10,7 @@ window.onload = () => {
 
 
     let factory = {
-        "app": App,
+        //"app": App,
         // "dashboard": Dashboard,
         // "navigation": Navigation,
         // "header": Header,

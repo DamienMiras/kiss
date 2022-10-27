@@ -18,8 +18,12 @@ export default class Dashboard_menu extends Kiss {
           //  this.postMessage(this, "dashboard", "test", "I am alive");
         }.bind(this), 1000 * 10);
         */
+        super.onLoaded();
         let stopButton = document.getElementById("stop");
         stopButton.onclick = this.stopLoading.bind(this);
+        document.getElementById("stop").onclick = function () {
+            this.postMessage(this, "dashboard", "stop", {});
+        }.bind(this);
         document.getElementById("day").onclick = function () {
             this.postMessage(this, "dashboard", "rangeSelect", {range: 24});
         }.bind(this);
@@ -34,6 +38,7 @@ export default class Dashboard_menu extends Kiss {
 
 
     stopLoading() {
+        console.log("stop");
         this.stop = true;
     }
 

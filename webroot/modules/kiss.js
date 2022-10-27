@@ -87,11 +87,11 @@ export default class Kiss extends Peace {
 
     onData(url, data) {
         this.l("data success " + url, this, data);
-        return Promise.resolve(true);
+        return Promise.resolve(data);
     }
 
     onFile(url, text) {
-        return Promise.resolve(true);
+        return Promise.resolve(text);
     }
 
     capitalizeFirstLetter(string) {
@@ -172,18 +172,24 @@ export default class Kiss extends Peace {
             if (promises.length > 0) {
                 return Promise.all(promises).then(values => {
                     try {
+
+                        for (let kiss of values) {
+                            if (kiss) {
+                                kiss.onLoaded();
+                            }
+                        }
                         this.onLoaded();
                         this.l("kiss childs loaded", values);
                     } catch (e) {
                         this.e(e);
                     }
-                    return Promise.resolve(true);
+                    return Promise.resolve(this);
                 }).catch(err => {
                     this.e("loading error " + this.name, err);
                     return Promise.reject();
                 });
             } else {
-                return Promise.resolve(true);
+                return Promise.resolve(this);
             }
 
 
@@ -220,7 +226,7 @@ export default class Kiss extends Peace {
                     this.e("<" + this.names + ' class=".kiss"> has been found but there is any file nor a content returned by render().' +
                         ' you could makes render() returning html content, or create the folowing file with non empty content ', htmlUri);
                     //TODO return load Service;
-                    return Promise.resolve(true);
+                    return Promise.resolve(this);
                 }
             }
         );

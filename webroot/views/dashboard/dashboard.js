@@ -313,6 +313,9 @@ export default class Dashboard extends Kiss {
         if (meta.type === "rangeSelect") {
             this.selectRange(meta.data);
         }
+        if (meta.type === "stop") {
+            this.stop = true;
+        }
     }
 
     onOhlcRecieved(result) {
