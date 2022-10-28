@@ -13,16 +13,11 @@ export default class Dashboard_menu extends Kiss {
 
 
     onLoaded() {
-        /*
-        window.setInterval(function () {
-          //  this.postMessage(this, "dashboard", "test", "I am alive");
-        }.bind(this), 1000 * 10);
-        */
         super.onLoaded();
-        let stopButton = document.getElementById("stop");
-        stopButton.onclick = this.stopLoading.bind(this);
+
         document.getElementById("stop").onclick = function () {
             this.postMessage(this, "dashboard", "stop", {});
+            this.stopLoading();
         }.bind(this);
         document.getElementById("day").onclick = function () {
             this.postMessage(this, "dashboard", "rangeSelect", {range: 24});
@@ -38,7 +33,7 @@ export default class Dashboard_menu extends Kiss {
 
 
     stopLoading() {
-        console.log("stop");
+        console.log("stopLoading");
         this.stop = true;
     }
 
@@ -53,6 +48,8 @@ export default class Dashboard_menu extends Kiss {
     fetchData(parameters) {
 
         if (this.stop === true) {
+            console.info("Stop asked stop timer", this.stop)
+            clearInterval(this.timer);
             return;
         }
         parameters = {
@@ -82,12 +79,15 @@ export default class Dashboard_menu extends Kiss {
                         //dont use timer , because there is no garantie that the answer comes in the right order
                         if (this.stop === false) {
                             this.fetchData();
+                        } else {
+                            console.info("Stop asked stop timer", this.stop)
+                            clearInterval(this.timer);
                         }
                     }
                 } else if (this.last === result.last) {
                     if (this.firstBatch === true) {
                         clearInterval(this.timer);
-                        this.timer = setInterval(() => this.fetchData(), 1000 * 60);
+                        this.timer = setInterval(() => this.fetchData(), 1000);
                         this.firstBatch = false;
                     }
                 }

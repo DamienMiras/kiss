@@ -20,8 +20,6 @@ export default class Kiss extends Peace {
         }
         this.name = this.element.tagName.toLowerCase();
 
-        // this.bus.on("kiss." + this.name, this.onBroadcastMessage.bind(this));
-
         this.bus.addEventListener("kiss." + this.name, this.onBroadcastMessage.bind(this));
 
 
