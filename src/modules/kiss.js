@@ -1,29 +1,38 @@
 //let bus = $("app");
 import Peace from './peace.js';
-import Global from "./global.js";
+import ColorUtil from "./colorUtil.js";
 
 
-let global = new Global();
+let colors = new ColorUtil();
 export default class Kiss extends Peace {
     constructor(parentKiss, element) {
         super();
+        let apps =  document.getElementsByTagName("app");
+        if(apps.length > 1) {
+            throw "Only on app tag is allowed per htl document"
+        }
+        if(apps.length  === 0) {
+            throw "any tag found please create one like that <app> this should no be shown</app>";
+        }
+        let app = apps[0];
+        //attach the main app element to the eventbus
+        this.bus = app;
+        this.bus.addEventListener("kiss." + this.name, this.onBroadcastMessage.bind(this));
 
-
-        this.bus = document.getElementsByTagName("app")[0];
-        this.global = global;
         this.parentKiss = parentKiss;
 
         if (!element) {
-            this.element = document.getElementsByTagName("app")[0];
+            //the bus
+            this.element = app;
         } else {
             this.element = element;
         }
         this.name = this.element.tagName.toLowerCase();
 
-        this.bus.addEventListener("kiss." + this.name, this.onBroadcastMessage.bind(this));
 
 
-        //TODO set as global, to get it from the console
+
+        //TODO set as colors, to get it from the console
         this.visualDebug = true;
     }
 
@@ -223,7 +232,7 @@ export default class Kiss extends Peace {
 
     getColor() {
         if (!this.color) {
-            this.color = global.getNextColor();
+            this.color = colors.getNextColor();
         }
         return this.color;
     }

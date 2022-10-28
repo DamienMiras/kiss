@@ -405,7 +405,7 @@ export default class Dashboard extends Kiss {
                     yAxis: 0,
                     name: name,
                     id: name,
-                    color: this.global.getRainbow(),
+                    color: this.colors.getRainbow(),
                     lineWidth: 1,
                     data: this.serieData[name]
                 }
@@ -467,7 +467,7 @@ export default class Dashboard extends Kiss {
                     id: usdBalance,
                     lineWidth: 1.5,
                     dashStyle: 'LongDash',
-                    color: this.global.getGreen(),//"#00880a",
+                    color: this.colors.getGreen(),//"#00880a",
                     data: this.serieData[usdBalance]
                 }
             }
@@ -481,7 +481,7 @@ export default class Dashboard extends Kiss {
                     lineWidth: 1.5,
                     dashStyle: 'LongDashDotDot',
                     //color:"#bb9004",
-                    color: this.global.getYellow(),
+                    color: this.colors.getYellow(),
                     data: this.serieData[btcBalance]
                 }
             }
@@ -493,7 +493,7 @@ export default class Dashboard extends Kiss {
                     id: buyAndSellLine,
                     name: "[" + group + "]  buy and sell line",
                     //color: "rgb(135,36,255)",
-                    color: this.global.getLavanda(),
+                    color: this.colors.getLavanda(),
                     lineWidth: 1,
                     data: this.serieData[buyAndSellLine]
                 }
