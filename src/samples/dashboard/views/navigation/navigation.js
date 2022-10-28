@@ -8,7 +8,7 @@ export default class Navigation extends Kiss {
     }
 
     onLoaded() {
-
+        super.onLoaded();
 
     }
 }

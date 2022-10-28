@@ -299,6 +299,7 @@ export default class Dashboard extends Kiss {
     }
 
     onLoaded() {
+        super.onLoaded();
         this.chart = Highcharts.stockChart('stockChart', this.chartOptions);
         //after event onLoad the chart will postMessage asking data
 

@@ -6,6 +6,6 @@ export default class App extends Kiss {
     }
 
     onLoaded() {
-
+        super.onLoaded();
     }
 }

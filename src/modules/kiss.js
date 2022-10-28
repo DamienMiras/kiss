@@ -1,27 +1,17 @@
-//let bus = $("app");
-import Peace from './peace.js';
+import Peace from "./peace.js";
 import ColorUtil from "./colorUtil.js";
-
+import Configuration from "./configuration.js";
 
 let colors = new ColorUtil();
 export default class Kiss extends Peace {
     constructor(parentKiss, element) {
         super();
 
-        this.basePath= "";
-        if(!window.context  ||  !window.context.kiss) {
-            window.context = {
-                kiss: this,
-                basePath : ""
-            }
+        let apps = document.getElementsByTagName("app");
+        if (apps.length > 1) {
+            throw "Only on app tag is allowed per html document"
         }
-
-
-        let apps =  document.getElementsByTagName("app");
-        if(apps.length > 1) {
-            throw "Only on app tag is allowed per htl document"
-        }
-        if(apps.length  === 0) {
+        if (apps.length === 0) {
             throw "any tag found please create one like that <app> this should no be shown</app>";
         }
         let app = apps[0];
@@ -29,7 +19,7 @@ export default class Kiss extends Peace {
         this.bus = app;
         this.bus.addEventListener("kiss." + this.name, this.onBroadcastMessage.bind(this));
 
-        if(!parentKiss) {
+        if (!parentKiss) {
             parentKiss = null;
         }
         this.parentKiss = parentKiss;
@@ -41,8 +31,6 @@ export default class Kiss extends Peace {
             this.element = element;
         }
         this.name = this.element.tagName.toLowerCase();
-
-
 
 
         //TODO set as colors, to get it from the console
@@ -112,13 +100,7 @@ export default class Kiss extends Peace {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    configureBasePath(basePath) {
-        window.context.basePath = basePath
 
-    }
-    getBasePath() {
-        return    window.context.basePath;
-    }
     load() {
         let htmlUri = "views/" + this.name + "/" + this.name + ".html";
         let cssUri = "views/" + this.name + "/" + this.name + ".css";
@@ -146,45 +128,47 @@ export default class Kiss extends Peace {
 
 
                 let className = this.capitalizeFirstLetter(kissName);
-                let modulePath =  this.getBasePath()+"views/" + kissName + "/" + kissName + ".js";
+                let modulePath = Configuration.getBasePath() + "views/" + kissName + "/" + kissName + ".js";
                 promises.push(
                     import(modulePath)
                         .then(obj => {
-                            this.l("import " + className, obj);
+
 
                             let kissView = new obj.default(this, kiss);
                             try {
                                 let result = kissView.load();
 
                                 return result.then(result => {
-                                    this.l("load ok  ", kissName, result);
+                                    this.l("import loaded and class instanciated  ", kissName, result);
                                     return result;
                                 }).catch(e => {
-                                    this.e("load error ", kissName, e);
-                                    return Promise.reject("load error "+kissName);
+                                    this.e("instanciation error ", kissName, e);
+                                    return Promise.reject("instanciation error " + kissName);
                                 });
 
                             } catch (e) {
                                 this.e("Kiss.load() error ", e);
-                                return Promise.reject("Kiss.load() error "+kissName);
+                                return Promise.reject("Kiss.load() error " + kissName);
                             }
                         })
                         .catch(err => {
                             this.e("import error " + kissName, err);
-                            return Promise.reject("import error " + kissName+ " " +err);
+                            return Promise.reject("import error " + kissName + " " + err);
                         })
                 );
 
             }
+
             if (promises.length > 0) {
                 return Promise.all(promises).then(values => {
                     try {
+                        this.onLoaded();
                         for (let kiss of values) {
                             if (kiss) {
                                 kiss.onLoaded();
                             }
                         }
-                        this.onLoaded();
+
                         this.l("kiss childs loaded", values);
                     } catch (e) {
                         this.e(e);
@@ -241,7 +225,7 @@ export default class Kiss extends Peace {
     }
 
     onLoaded() {
-
+        this.l("COMPONENT LOADED "+this.name);
     }
 
     render() {
@@ -268,17 +252,17 @@ export default class Kiss extends Peace {
     }
 
     postMessage(from, to, type, data) {
-
-        this.bus.dispatchEvent(new CustomEvent("kiss." + to, {
-                    detail: {
-                        type: type,
-                        data: data,
-                        from: from,
-                        to: to
-                    }
+        let event = new CustomEvent("kiss." + to, {
+                detail: {
+                    type: type,
+                    data: data,
+                    from: from,
+                    to: to
                 }
-            )
-        );
+            }
+        )
+        this.l("post message ", event);
+        this.bus.dispatchEvent(event);
     }
 
 
