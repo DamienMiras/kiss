@@ -7,6 +7,16 @@ let colors = new ColorUtil();
 export default class Kiss extends Peace {
     constructor(parentKiss, element) {
         super();
+
+        this.basePath= "";
+        if(!window.context  ||  !window.context.kiss) {
+            window.context = {
+                kiss: this,
+                basePath : ""
+            }
+        }
+
+
         let apps =  document.getElementsByTagName("app");
         if(apps.length > 1) {
             throw "Only on app tag is allowed per htl document"
@@ -19,6 +29,9 @@ export default class Kiss extends Peace {
         this.bus = app;
         this.bus.addEventListener("kiss." + this.name, this.onBroadcastMessage.bind(this));
 
+        if(!parentKiss) {
+            parentKiss = null;
+        }
         this.parentKiss = parentKiss;
 
         if (!element) {
@@ -83,7 +96,7 @@ export default class Kiss extends Peace {
 
     onError(url, error) {
         this.e("fetch error " + url, this, error);
-        return Promise.reject();
+        return Promise.reject("fetch error " + url);
     }
 
     onData(url, data) {
@@ -99,7 +112,13 @@ export default class Kiss extends Peace {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
+    configureBasePath(basePath) {
+        window.context.basePath = basePath
 
+    }
+    getBasePath() {
+        return    window.context.basePath;
+    }
     load() {
         let htmlUri = "views/" + this.name + "/" + this.name + ".html";
         let cssUri = "views/" + this.name + "/" + this.name + ".css";
@@ -117,6 +136,7 @@ export default class Kiss extends Peace {
             let parentElement;
             if (this.parentKiss) {
                 parentElement = this.parentKiss.getName();
+
             }
             let kisses = this.element.querySelectorAll('.kiss');
             let promises = [];
@@ -126,7 +146,7 @@ export default class Kiss extends Peace {
 
 
                 let className = this.capitalizeFirstLetter(kissName);
-                let modulePath = "../views/" + kissName + "/" + kissName + ".js";
+                let modulePath =  this.getBasePath()+"views/" + kissName + "/" + kissName + ".js";
                 promises.push(
                     import(modulePath)
                         .then(obj => {
@@ -141,18 +161,17 @@ export default class Kiss extends Peace {
                                     return result;
                                 }).catch(e => {
                                     this.e("load error ", kissName, e);
-                                    return Promise.reject();
+                                    return Promise.reject("load error "+kissName);
                                 });
 
                             } catch (e) {
                                 this.e("Kiss.load() error ", e);
-                                return Promise.reject();
+                                return Promise.reject("Kiss.load() error "+kissName);
                             }
-
                         })
                         .catch(err => {
-                            this.e("import error " + className, err);
-                            return Promise.reject();
+                            this.e("import error " + kissName, err);
+                            return Promise.reject("import error " + kissName+ " " +err);
                         })
                 );
 
@@ -261,5 +280,6 @@ export default class Kiss extends Peace {
             )
         );
     }
+
 
 }

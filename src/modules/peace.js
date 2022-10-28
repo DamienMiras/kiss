@@ -59,11 +59,14 @@ export default class Peace {
 
             })
             .catch(error => {
-                this.onError(url, error);
+                let err = this.onError(url, error).catch(err => {
+                        return Promise.reject(err);
+                    }
+                );
                 if (onErrorCallback) {
                     return onErrorCallback(url, error);
                 } else {
-                    return this.onError(url, error);
+                    return err;
                 }
 
             });
