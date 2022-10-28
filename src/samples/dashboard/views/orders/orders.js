@@ -1,4 +1,4 @@
-import Kiss from "../../modules/kiss.js";
+import Kiss from "../../../../modules/kiss.js";
 
 export default class Dashboard_menu extends Kiss {
     constructor(parentKiss, element) {
