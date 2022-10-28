@@ -1,7 +1,7 @@
 import Counter from "./counter.js";
 import Rgb from "./rgb.js"
 
-export default class Global {
+export default class ColorUtil {
     constructor() {
         this.rgbPos = 0;
         this.whitePos = 1;
