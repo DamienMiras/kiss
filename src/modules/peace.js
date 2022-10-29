@@ -1,7 +1,53 @@
+import ColorUtil from "./colorUtil.js";
+
+let colors = new ColorUtil();
 export default class Peace {
+    verbose = false;
+
+    getVerbose() {
+        return this.verbose;
+    }
+
+    setVerbose(value) {
+        this.verbose = value;
+    }
+
     constructor(name) {
 
         this.name = name;
+    }
+
+    getColor() {
+        if (!this.color) {
+            this.color = colors.getNextColor();
+        }
+        return this.color;
+    }
+
+    v(...arg) {
+        if (this._verbose) {
+            this.l(arg);
+        }
+    }
+
+    l(...args) {
+        console.log("%c+------------------------------------kiss[" + this.name + "]-------" + this.getPath() + "\t",
+            "color:" + this.getColor() + ";",
+            this, "\r\n", ...args);
+    }
+
+    e(...args) {
+        console.error("%c+------------------------------------kiss[" + this.name + "]-------" + this.getPath() + "\t",
+            "color:" + this.getColor() + ";",
+            this, "\r\n", ...args);
+    }
+
+    getPath() {
+        if (path) {
+
+            return path;
+        }
+        return "";
     }
 
 
@@ -79,7 +125,7 @@ export default class Peace {
                     this.v(url, response);
                     return response.text();
                 } else {
-                    throw new Error("status not ok but " + response.status);
+                    throw new Error("status not ok 200 but " + response.status);
                 }
             })
             .then(data => {

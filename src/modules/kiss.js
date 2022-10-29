@@ -1,9 +1,8 @@
 import Peace from "./peace.js";
-import ColorUtil from "./colorUtil.js";
 import Configuration from "./configuration.js";
 import Bus from "./bus.js";
 
-let colors = new ColorUtil();
+
 export default class Kiss extends Peace {
     constructor(parentKiss, element) {
         super();
@@ -51,23 +50,7 @@ export default class Kiss extends Peace {
         return path;
     }
 
-    v(...arg) {
-        if (this.verbose) {
-            this.l(arg);
-        }
-    }
 
-    l(...args) {
-        console.log("%c+------------------------------------kiss[" + this.name + "]-------" + this.getPath() + "\t",
-            "color:" + this.getColor() + ";",
-            this, "\r\n", ...args);
-    }
-
-    e(...args) {
-        console.error("%c+------------------------------------kiss[" + this.name + "]-------" + this.getPath() + "\t",
-            "color:" + this.getColor() + ";",
-            this, "\r\n", ...args);
-    }
 
     getParent() {
         return this.parentKiss;
@@ -232,12 +215,6 @@ export default class Kiss extends Peace {
     }
 
 
-    getColor() {
-        if (!this.color) {
-            this.color = colors.getNextColor();
-        }
-        return this.color;
-    }
 
 
     onMessageReceived(event) {
