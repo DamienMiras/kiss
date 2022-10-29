@@ -6,7 +6,7 @@ window.onload = () => {
 
     console.log("------------------------------------Load KISS-----------------------------------------------------------------s")
 
-    Configuration.setBasePath("../samples/dashboard/")
+    Configuration.setBasePath("../samples/dashboard/");
 
     new Kiss().load().then(result => {
         console.log("" +

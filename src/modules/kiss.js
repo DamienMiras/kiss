@@ -9,7 +9,7 @@ export default class Kiss extends Peace {
 
         let apps = document.getElementsByTagName("app");
         if (apps.length > 1) {
-            throw "Only on app tag is allowed per html document"
+            throw "Only one <app></app> tag is allowed per html document"
         }
         if (apps.length === 0) {
             throw "any tag found please create one like that <app> this should no be shown</app>";
@@ -32,7 +32,7 @@ export default class Kiss extends Peace {
         this.id = this.element.id;
 
 
-        //TODO set as colors, to get it from the console
+        //TODO set as config, to get it from the console
         this.visualDebug = true;
     }
 
@@ -49,7 +49,6 @@ export default class Kiss extends Peace {
         }
         return path;
     }
-
 
 
     getParent() {
@@ -165,20 +164,7 @@ export default class Kiss extends Peace {
 
 
         }
-        if (!document.getElementById(this.name + "Css")) {
-            this.getHead(
-                htmlUri,
-                (url, content) => {
-                    let link = document.createElement('link');
-                    link.id = this.name + "Css";
-                    link.rel = "stylesheet";
-                    // link.type = "text/css";
-                    link.href = cssUri;
-                    let child = document.head.appendChild(link);
-                    this.v("css views loaded : " + this.name, child);
-                });
-
-        }
+        this.#loadCss(cssUri);
 
         return this.getContent(
             htmlUri,
@@ -201,8 +187,36 @@ export default class Kiss extends Peace {
                 }
             }
         );
+    }
 
+    #loadCss(cssUri) {
+        let id = this.name + "Css";
+        if (!document.getElementById(id)) {
+            new MutationObserver((mutations, observer) => {
+                for (const mutation of mutations) {
+                    for (const node of mutation.addedNodes) {
+                        // Add additional checks here if needed
+                        // to identify if the script is the one added by the library
+                        if (node.nodeType === "text/css" && node.rel === "stylesheet") {
+                            node.addEventListener('error', () => {
+                                node.parentNode.removeChild(node);
+                            });
+                            // Remove the observer, since its purpose is fulfilled
+                            observer.disconnect();
+                            return;
+                        }
+                    }
+                }
+            }).observe(document.head, {childList: true});
 
+            let link = document.createElement('link');
+            link.id = id;
+            link.rel = "stylesheet";
+            link.type = "text/css";
+            link.href = cssUri;
+            let child = document.head.appendChild(link);
+            this.v("css views loaded : " + this.name, child);
+        }
     }
 
     onLoaded() {
@@ -213,8 +227,6 @@ export default class Kiss extends Peace {
     render() {
         return '<div>extends Kiss and implement render() or create a file</div>'
     }
-
-
 
 
     onMessageReceived(event) {
