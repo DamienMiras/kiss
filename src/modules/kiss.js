@@ -1,6 +1,7 @@
 import Peace from "./peace.js";
 import ColorUtil from "./colorUtil.js";
 import Configuration from "./configuration.js";
+import Bus from "./bus.js";
 
 let colors = new ColorUtil();
 export default class Kiss extends Peace {
@@ -15,9 +16,7 @@ export default class Kiss extends Peace {
             throw "any tag found please create one like that <app> this should no be shown</app>";
         }
         let app = apps[0];
-        //attach the main app element to the eventbus
-        this.bus = app;
-        this.bus.addEventListener("kiss." + this.name, this.onBroadcastMessage.bind(this));
+
 
         if (!parentKiss) {
             parentKiss = null;
@@ -31,12 +30,16 @@ export default class Kiss extends Peace {
             this.element = element;
         }
         this.name = this.element.tagName.toLowerCase();
+        this.id = this.element.id;
 
 
         //TODO set as colors, to get it from the console
         this.visualDebug = true;
     }
 
+    getId() {
+        return this.id;
+    }
 
     getPath() {
         let path = "";
@@ -78,9 +81,6 @@ export default class Kiss extends Peace {
         return this.element;
     }
 
-    bus() {
-        return this.bus;
-    }
 
     onError(url, error) {
         this.e("fetch error " + url, this, error);
@@ -126,8 +126,6 @@ export default class Kiss extends Peace {
                 let kissName = kiss.tagName.toLowerCase();
                 this.v("found a kiss tag named [" + kissName, "] current  :", this.element, "parent:", parentElement);
 
-
-                let className = this.capitalizeFirstLetter(kissName);
                 let modulePath = Configuration.getBasePath() + "views/" + kissName + "/" + kissName + ".js";
                 promises.push(
                     import(modulePath)
@@ -171,7 +169,7 @@ export default class Kiss extends Peace {
 
                         this.l("kiss childs loaded", values);
                     } catch (e) {
-                        this.e(e);
+                        this.e("onLoaded error ", e);
                     }
                     return Promise.resolve(this);
                 }).catch(err => {
@@ -225,7 +223,8 @@ export default class Kiss extends Peace {
     }
 
     onLoaded() {
-        this.l("COMPONENT LOADED "+this.name);
+        this.l("COMPONENT LOADED " + this.name);
+        Bus.register(this);
     }
 
     render() {
@@ -240,29 +239,9 @@ export default class Kiss extends Peace {
         return this.color;
     }
 
-    onBroadcastMessage(e, data) {
 
-        if (e.type === "kiss." + this.name) {
-            this.onMessageReceived(e, e.detail);
-        }
-    }
-
-    onMessageReceived(e, meta) {
-        this.l(this.name + " recevieved a message type[" + meta.type + "] from [" + meta.from.getName() + "]", meta, e);
-    }
-
-    postMessage(from, to, type, data) {
-        let event = new CustomEvent("kiss." + to, {
-                detail: {
-                    type: type,
-                    data: data,
-                    from: from,
-                    to: to
-                }
-            }
-        )
-        this.l("post message ", event);
-        this.bus.dispatchEvent(event);
+    onMessageReceived(event) {
+        this.l(this.name + " recevieved a message type[" + event.type + "] from [" + event.from.getName() + "]", event);
     }
 
 

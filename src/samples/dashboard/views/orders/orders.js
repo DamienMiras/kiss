@@ -1,6 +1,6 @@
 import Kiss from "../../../../modules/kiss.js";
 
-export default class Dashboard_menu extends Kiss {
+export default class Orders extends Kiss {
     constructor(parentKiss, element) {
         super(parentKiss, element);
     }
@@ -11,8 +11,8 @@ export default class Dashboard_menu extends Kiss {
     }
 
 
-    onMessageReceived(e, meta) {
-        super.onMessageReceived(e, meta);
+    onMessageReceived(meta) {
+        super.onMessageReceived(meta);
     }
 
 

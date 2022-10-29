@@ -1,4 +1,5 @@
 import Kiss from "../../../../modules/kiss.js";
+import Bus from "../../../../modules/bus.js";
 
 export default class Dashboard_menu extends Kiss {
     constructor(parentKiss, element) {
@@ -16,17 +17,17 @@ export default class Dashboard_menu extends Kiss {
         super.onLoaded();
 
         document.getElementById("stop").onclick = function () {
-            this.postMessage(this, "dashboard", "stop", {});
+            Bus.postMessage(this, "dashboard", "stop", {});
             this.stopLoading();
         }.bind(this);
         document.getElementById("day").onclick = function () {
-            this.postMessage(this, "dashboard", "rangeSelect", {range: 24});
+            Bus.postMessage(this, "dashboard", "rangeSelect", {range: 24});
         }.bind(this);
         document.getElementById("hour").onclick = function () {
-            this.postMessage(this, "dashboard", "rangeSelect", {range: 4});
+            Bus.postMessage(this, "dashboard", "rangeSelect", {range: 4});
         }.bind(this);
         document.getElementById("2hour").onclick = function () {
-            this.postMessage(this, "dashboard", "rangeSelect", {range: 2});
+            Bus.postMessage(this, "dashboard", "rangeSelect", {range: 2});
         }.bind(this);
 
     }
@@ -38,8 +39,8 @@ export default class Dashboard_menu extends Kiss {
     }
 
 
-    onMessageReceived(e, meta) {
-        super.onMessageReceived(e, meta);
+    onMessageReceived(meta) {
+        super.onMessageReceived(meta);
         if (meta.to === this.getName() && meta.data === "loaded") {
             this.fetchData();
         }
@@ -66,7 +67,13 @@ export default class Dashboard_menu extends Kiss {
 
 
         fetch(url)
-            .then(response => response.json())
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error("status " + response.status);
+                }
+            })
             .then(result => {
                 if (this.stop === true) {
                     return;
@@ -74,7 +81,7 @@ export default class Dashboard_menu extends Kiss {
                 console.info("stp", this.stop)
                 if (result.last > this.last) {
                     this.last = result.last;
-                    this.postMessage(this, "dashboard", "ohlc", result);
+                    Bus.postMessage(this, "dashboard", "ohlc", result);
                     if (this.firstBatch === true) {
                         //dont use timer , because there is no garantie that the answer comes in the right order
                         if (this.stop === false) {

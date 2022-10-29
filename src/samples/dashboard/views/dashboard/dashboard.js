@@ -1,4 +1,5 @@
 import Kiss from "../../../../modules/kiss.js";
+import Bus from "../../../../modules/bus.js";
 
 export default class Dashboard extends Kiss {
     constructor(parentKiss, element) {
@@ -306,15 +307,15 @@ export default class Dashboard extends Kiss {
     }
 
 
-    onMessageReceived(e, meta) {
-        super.onMessageReceived(e, meta);
-        if (meta.type === "ohlc") {
-            this.onOhlcRecieved(meta.data);
+    onMessageReceived(event) {
+        super.onMessageReceived(event);
+        if (event.type === "ohlc") {
+            this.onOhlcRecieved(event.data);
         }
-        if (meta.type === "rangeSelect") {
-            this.selectRange(meta.data);
+        if (event.type === "rangeSelect") {
+            this.selectRange(event.data);
         }
-        if (meta.type === "stop") {
+        if (event.type === "stop") {
             this.stop = true;
         }
     }
@@ -855,7 +856,7 @@ export default class Dashboard extends Kiss {
 
     onChartLoad(event) {
         this.l("highchart LOAD", this, event);
-        this.postMessage(this, "dashboard_menu", "status", "loaded");
+        Bus.postMessage(this, "dashboard_menu", "status", "loaded");
     }
 
     onChartRedraw(event) {

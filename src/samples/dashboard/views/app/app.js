@@ -5,7 +5,4 @@ export default class App extends Kiss {
         super(parentKiss, element);
     }
 
-    onLoaded() {
-        super.onLoaded();
-    }
 }
