@@ -107,8 +107,10 @@ class EventBus {
                     this.removeDeadLetter(to, event);
                     console.warn("destination to [" + to + "] for event from [" + event.from.getName() +
                         "] not found  after timeout, event is discard from dead letter queue. " +
-                        "the component does not exists or has been removed", event)
-                    reject(new Error("Whoops!"));
+                        "the component does not exists or has been removed", event);
+                    reject(new Error("destination to [" + to + "] for event from [" + event.from.getName() +
+                        "] not found  after timeout, event is discard from dead letter queue. " +
+                        "the component does not exists or has been removed"));
                 }, 5000);
             } else {
                 this.registry[to].forEach(instance => instance.onMessageReceived(event));
