@@ -64,19 +64,6 @@ export default class Kiss extends Peace {
     }
 
 
-    onError(url, error) {
-        this.e("fetch error " + url, this, error);
-        return Promise.reject("fetch error " + url);
-    }
-
-    onData(url, data) {
-        this.l("data success " + url, this, data);
-        return Promise.resolve(data);
-    }
-
-    onFile(url, text) {
-        return Promise.resolve(text);
-    }
 
     capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
@@ -197,9 +184,11 @@ export default class Kiss extends Peace {
                     for (const node of mutation.addedNodes) {
                         // Add additional checks here if needed
                         // to identify if the script is the one added by the library
-                        if (node.nodeType === "text/css" && node.rel === "stylesheet") {
-                            node.addEventListener('error', () => {
+                        if (node.rel === "stylesheet") {
+                            node.addEventListener('error', (event) => {
                                 node.parentNode.removeChild(node);
+                                event.stopPropagation();
+                                return true;
                             });
                             // Remove the observer, since its purpose is fulfilled
                             observer.disconnect();

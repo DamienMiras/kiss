@@ -105,14 +105,12 @@ export default class Peace {
 
             })
             .catch(error => {
-                let err = this.onError(url, error).catch(err => {
-                        return Promise.reject(err);
-                    }
-                );
+
                 if (onErrorCallback) {
                     return onErrorCallback(url, error);
                 } else {
-                    return err;
+                    return this.onError(url, error)
+
                 }
 
             });
@@ -135,13 +133,27 @@ export default class Peace {
                 }
             })
             .catch(error => {
-                this.onError(url, error);
+
                 if (onErrorCallback) {
                     onErrorCallback(url, error);
-                } else {
-                    this.onError(url, error);
                 }
+                this.onError(url, error);
             });
     }
+
+    onError(url, error) {
+        this.e("fetch error " + url, this, error);
+        return Promise.reject("fetch error " + url);
+    }
+
+    onData(url, data) {
+        this.l("data success " + url, this, data);
+        return Promise.resolve(data);
+    }
+
+    onFile(url, text) {
+        return Promise.resolve(text);
+    }
+
 
 }
