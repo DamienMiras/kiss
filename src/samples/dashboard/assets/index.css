@@ -1,13 +1,12 @@
 body {
     background-color: #050505;
     color: #f1f7ff;
-    font-family: "Liberation Mono";
     margin: 0px;
     padding: 0px;
 }
 
 .debug .view {
-    border: 0px solid #ff0080;
+    border: 0 solid #ff0080;
 }
 
 #navigation {
