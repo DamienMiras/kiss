@@ -1,6 +1,7 @@
 import Peace from "./peace.js";
 import Configuration from "./configuration.js";
 import Bus from "./bus.js";
+import logger from "./log.js";
 
 
 export default class Kiss extends Peace {
@@ -34,6 +35,7 @@ export default class Kiss extends Peace {
 
         //TODO set as config, to get it from the console
         this.visualDebug = true;
+        logger.setCaller(this);
     }
 
     getId() {
@@ -71,8 +73,9 @@ export default class Kiss extends Peace {
 
 
     load() {
-        let htmlUri = "views/" + this.name + "/" + this.name + ".html";
-        let cssUri = "views/" + this.name + "/" + this.name + ".css";
+
+        let htmlUri = Configuration.getViewPath() + this.name + "/" + this.name + ".html";
+        let cssUri = Configuration.getViewPath() + this.name + "/" + this.name + ".css";
 
         let loadAllkisses = () => {
             if (this.visualDebug) {
@@ -87,7 +90,6 @@ export default class Kiss extends Peace {
             let parentElement;
             if (this.parentKiss) {
                 parentElement = this.parentKiss.getName();
-
             }
             let kisses = this.element.querySelectorAll('.kiss');
             let promises = [];
@@ -106,20 +108,20 @@ export default class Kiss extends Peace {
                                 let result = kissView.load();
 
                                 return result.then(result => {
-                                    this.l("import loaded and class instanciated  ", kissName, result);
+                                    log("import loaded and class instanciated  ", kissName, result);
                                     return result;
                                 }).catch(e => {
-                                    this.e("instanciation error ", kissName, e);
+                                    error("instanciation error ", kissName, e);
                                     return Promise.reject("instanciation error " + kissName);
                                 });
 
                             } catch (e) {
-                                this.e("Kiss.load() error ", e);
+                                err("Kiss.load() error ", e);
                                 return Promise.reject("Kiss.load() error " + kissName);
                             }
                         })
                         .catch(err => {
-                            this.e("import error " + kissName, err);
+                            err("import error " + kissName, err);
                             return Promise.reject("import error " + kissName + " " + err);
                         })
                 );
@@ -136,13 +138,13 @@ export default class Kiss extends Peace {
                             }
                         }
 
-                        this.l("kiss childs loaded", values);
+                        log("kiss childs loaded", values);
                     } catch (e) {
-                        this.e("onLoaded error ", e);
+                        err("onLoaded error ", e);
                     }
                     return Promise.resolve(this);
                 }).catch(err => {
-                    this.e("loading error " + this.name, err);
+                    err("loading error " + this.name, err);
                     return Promise.reject();
                 });
             } else {
@@ -163,11 +165,11 @@ export default class Kiss extends Peace {
                 let rend = this.render();
                 if (rend !== undefined && rend !== '') {
                     this.element.innerHTML = rend;
-                    this.l("no kiss html file found, so render with render() ", url, error);
+                    log("no kiss html file found, so render with render() ", url, error);
                     return loadAllkisses();
 
                 } else {
-                    this.e("<" + this.names + ' class=".kiss"> has been found but there is any file nor a content returned by render().' +
+                    err("<" + this.names + ' class=".kiss"> has been found but there is any file nor a content returned by render().' +
                         ' you could makes render() returning html content, or create the folowing file with non empty content ', htmlUri);
                     //TODO return load Service;
                     return Promise.resolve(this);
@@ -209,7 +211,7 @@ export default class Kiss extends Peace {
     }
 
     onLoaded() {
-        this.l("COMPONENT LOADED " + this.name);
+        log("COMPONENT LOADED " + this.name);
         Bus.register(this);
     }
 
@@ -219,7 +221,7 @@ export default class Kiss extends Peace {
 
 
     onMessageReceived(event) {
-        this.l(this.name + " recevieved a message type[" + event.type + "] from [" + event.from.getName() + "]", event);
+        log(this.name + " recevieved a message type[" + event.type + "] from [" + event.from.getName() + "]", event);
     }
 
 

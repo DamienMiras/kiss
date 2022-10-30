@@ -4,12 +4,12 @@ import Configuration from "../../modules/configuration.js";
 
 window.onload = () => {
 
-    console.log("------------------------------------Load KISS-----------------------------------------------------------------s")
+    log("------------------------------------Load KISS-----------------------------------------------------------------s")
 
     Configuration.setBasePath("../samples/dashboard/");
 
     new Kiss().load().then(result => {
-        console.log("" +
+        log("" +
             "                                                                 \r\n" +
             "                                                                 \r\n" +
             "                                                                 \r\n" +
@@ -27,8 +27,8 @@ window.onload = () => {
             "                                                                 \r\n" +
             "                                                                 \r\n"
             , result);
-    }).catch(err => {
-        console.error("Kiss not started ", err);
+    }).catch(error => {
+        err("Kiss not started ", error);
     });
 
 

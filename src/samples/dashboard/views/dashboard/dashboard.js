@@ -855,7 +855,7 @@ export default class Dashboard extends Kiss {
     }
 
     onChartLoad(event) {
-        this.l("highchart LOAD", this, event);
+        log("highchart LOAD", this, event);
         Bus.postMessage(this, "dashboard_menu", "status", "loaded");
     }
 

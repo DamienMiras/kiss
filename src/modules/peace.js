@@ -1,4 +1,5 @@
 import ColorUtil from "./colorUtil.js";
+import logger from "./log.js";
 
 let colors = new ColorUtil();
 export default class Peace {
@@ -13,7 +14,7 @@ export default class Peace {
     }
 
     constructor(name) {
-
+        logger.setCaller(this);
         this.name = name;
     }
 
@@ -142,12 +143,12 @@ export default class Peace {
     }
 
     onError(url, error) {
-        this.e("fetch error " + url, this, error);
+        err("fetch error " + url, this, error);
         return Promise.reject("fetch error " + url);
     }
 
     onData(url, data) {
-        this.l("data success " + url, this, data);
+        log("data success " + url, this, data);
         return Promise.resolve(data);
     }
 
