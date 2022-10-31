@@ -2,11 +2,13 @@
 
 **This project is experimental.**
 
-there is many virtual DOM framework actally 55 pages on npm. What is a virtual dom ? React vuejs and angular are virtual
-dom library.
+there is many virtual DOM framework actually 55 pages on npm. What is a virtual dom ? React vuejs and angular are
+virtual dom libraries.
 
 **Why write yet another lib ?**
-I really love angular and I work with it every days, React and vuejs are awesome. I want something different
+
+I really love angular and I work with it every days, React and vuejs are awesome. I just want something different, and
+push my skills forward.
 
 - I dont want to wait for a build any time I do a change
 - I want an eventBus wich can send events to any parent/child/sibling/id with ne line of code
