@@ -1,3 +1,6 @@
+import {isNotEmpty} from "./objectUtil.js";
+import {err, info, warn} from "./log.js";
+
 export default class Bus {
 
     static get() {
@@ -23,6 +26,11 @@ class EventBus {
     deadletterQueue = {};
 
     constructor() {
+
+    }
+
+    getColor() {
+        return "rgb(223,241,0)";
     }
 
     register(instance) {
@@ -47,27 +55,32 @@ class EventBus {
 
                 events.forEach(event => {
                     this.postMessage(event.from, event.to, event.type, event.data)
-                        .then(info => {
-                            console.log("dead letter message finaly posted from " + this.getIdentifierFromInstance(event.from) +
+                        .then(result => {
+                            info(this)("dead letter message finaly posted from " + this.getIdentifierFromInstance(event.from) +
                                 " to " + event.to);
                         })
-                        .catch(err => {
-                            console.error("dead letter message erreur when retry initialy  posted from " + this.getIdentifierFromInstance(event.from) +
-                                " to " + event.to, err);
+                        .catch(e => {
+                            err(this)("dead letter message error when retry initialy  posted from " + this.getIdentifierFromInstance(event.from) +
+                                " to " + event.to, e);
                         })
                 })
 
             }
 
-            console.info("Instance registred on eventBus: " + identifier, instance, this.registry);
+            info(this)("Instance registred on eventBus: " + identifier, instance, this.registry);
         } else {
-            console.warn("try to register instance twice for:" + identifier, instance)
+            warn(this)("try to register instance twice for: " + identifier, instance)
         }
     }
 
     getIdentifierFromInstance(instance) {
-        let identifier = instance.getName();
-        if (instance.getId() && instance.getId() !== "") {
+        //TODO test if is registrable
+        let identifier = instance.constructor.name;
+        if (instance.hasMethod("getName") && isNotEmpty(instance.getName())) {
+            identifier = instance.getName();
+        }
+
+        if (instance.hasMethod("getId") && instance.getId() && instance.getId() !== "") {
             identifier += "_" + instance.getId();
         }
         return identifier;
@@ -105,7 +118,7 @@ class EventBus {
                 this.deadletterQueue[to].push(event);
                 setTimeout(() => {
                     this.removeDeadLetter(to, event);
-                    console.warn("destination to [" + to + "] for event from [" + event.from.getName() +
+                    warn(this)("destination to [" + to + "] for event from [" + event.from.getName() +
                         "] not found  after timeout, event is discard from dead letter queue. " +
                         "the component does not exists or has been removed", event);
                     reject(new Error("destination to [" + to + "] for event from [" + event.from.getName() +

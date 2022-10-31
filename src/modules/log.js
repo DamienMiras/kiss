@@ -1,72 +1,101 @@
 // Full version of `log` that:
 //  * Prevents errors on console methods when no console present.
+import {isNotEmpty, isObject} from "./objectUtil.js";
+
+
+let log = function log() {
+};
+let deb = function deb() {
+};
+let err = function err() {
+};
+let warn = function warn() {
+};
+let info = function info() {
+};
 
 class bindConsole {
-    caller = null;
+
+    color = "rgb(0,152,2)";
 
     constructor() {
-        this.caller = this;
-        this.init(this);
+
+        this.#init(this);
     }
 
-    init(caller) {
-        var method;
-        var noop = function () {
+    #init() {
+        let method;
+        let noop = function () {
         };
-        var methods = [
+        let methods = [
             'assert', 'clear', 'count', 'debug', 'dir', 'dirxml', 'error',
             'exception', 'group', 'groupCollapsed', 'groupEnd', 'info', 'log',
             'markTimeline', 'profile', 'profileEnd', 'table', 'time', 'timeEnd',
             'timeStamp', 'trace', 'warn'
         ];
-        var length = methods.length;
-        var console = (window.console = window.console || {});
+        let length = methods.length;
+        let console = (window.console = window.console || {});
 
         while (length--) {
             method = methods[length];
-
             // Only stub undefined methods.
             if (!console[method]) {
                 console[method] = noop;
             }
         }
 
-
-        let color = "rgb(143,255,51)";
-        let path = ">";
-        let name = this.caller.constructor.name;
-        if (this.caller.hasMethod("getColor")) {
-            color = this.caller.getColor();
-        }
-        let colorStyle = "color:" + color + ";";
-        if (this.caller.hasMethod("getPath")) {
-            path = this.caller.getPath();
-        }
-        if (this.caller.hasMethod("getName")) {
-            name = this.caller.getPath();
-        }
-        let title = "%c+------------------------------------kiss[" + name + "]-------" + path + "\t"
         if (Function.prototype.bind) {
 
-            window.log = Function.prototype.bind.call(console.log, console, title, colorStyle, this.caller, "\r\n");
-            window.deb = Function.prototype.bind.call(console.trace, console, title, colorStyle, this.caller, "\r\n");
-            window.err = Function.prototype.bind.call(console.error, console, title, colorStyle, this.caller, "\r\n");
+            let format = function (caller, consoleMethod) {
+                let name = "logger";
+                let color = "rgb(0, 152, 2)";
+                let path = ">";
+                if (isNotEmpty(caller)) {
+                    name = "logger";
+                    if (caller.hasMethod("getColor") && caller.getColor()) {
+                        color = caller.getColor();
+                    }
+                    if (caller.hasMethod("getPath") && caller.getPath()) {
+                        path = caller.getPath();
+                    }
+                    if (caller.hasMethod("getName") && caller.getName()) {
+                        name = caller.getName();
+                    } else if (isObject(caller)) {
+                        name = caller.constructor.name;
+                    }
+                } else {
+                    caller = "anonymous()";
+                }
+                let colorStyle = "color:" + color + ";";
+                let title = "%c+------------------------------------kiss[" + name + "]-------" + path + "\t";
+                return Function.prototype.bind.call(consoleMethod, console, title, colorStyle, caller, "\r\n");
+            }
+            log = function (caller) {
+                return format(caller, console.log)
+            }
+            err = function (caller) {
+                return format(caller, console.error)
+            }
+            warn = function (caller) {
+                return format(caller, console.warn)
+            }
+            info = function (caller) {
+                return format(caller, console.info)
+            }
+
         } else {
-            window.log = function () {
+            //TDOO implments others
+            log = function () {
                 Function.prototype.apply.call(console.log, console, arguments);
             };
         }
     }
 
-    setCaller(caller) {
-        this.caller = caller;
-        this.init(caller);
-    }
 }
 
 let logger = new bindConsole();
-export default logger;
-
+export {log, err, warn, deb, info, logger}
+export default logger
 
 
 

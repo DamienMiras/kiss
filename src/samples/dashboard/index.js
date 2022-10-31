@@ -1,15 +1,18 @@
 import Kiss from "../../modules/kiss.js"
 import Configuration from "../../modules/configuration.js";
+import {err, log} from "../../modules/log.js";
 
 
 window.onload = () => {
 
-    log("------------------------------------Load KISS-----------------------------------------------------------------s")
+
+    log(window)("------------------------------------Load KISS-----------------------------------------------------------------s");
 
     Configuration.setBasePath("../samples/dashboard/");
 
     new Kiss().load().then(result => {
-        log("" +
+
+        log(this)("" +
             "                                                                 \r\n" +
             "                                                                 \r\n" +
             "                                                                 \r\n" +
@@ -30,7 +33,6 @@ window.onload = () => {
     }).catch(error => {
         err("Kiss not started ", error);
     });
-
 
 }
 

@@ -1,5 +1,3 @@
-import logger from "./log.js";
-
 export default class Configuration {
 
 
@@ -24,7 +22,7 @@ export default class Configuration {
         return Configuration.get().getViewpath();
     }
 
-    static setServicePath(viewPath) {
+    static setViewPath(viewPath) {
         Configuration.get().setServicePath(viewPath);
         return Configuration.get();
     }
@@ -38,6 +36,7 @@ export default class Configuration {
         return Configuration.get();
     }
 
+
 }
 
 class ConfigurationSingleton {
@@ -46,7 +45,6 @@ class ConfigurationSingleton {
     #servicePath = "services/";
 
     constructor() {
-        logger.setCaller(this);
     }
 
     setBasePath(basePath) {
@@ -56,7 +54,6 @@ class ConfigurationSingleton {
     }
 
     getBasePath() {
-
         return this.#basePath;
     }
 

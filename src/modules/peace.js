@@ -1,5 +1,5 @@
 import ColorUtil from "./colorUtil.js";
-import logger from "./log.js";
+import {err, log} from "./log.js";
 
 let colors = new ColorUtil();
 export default class Peace {
@@ -14,8 +14,9 @@ export default class Peace {
     }
 
     constructor(name) {
-        logger.setCaller(this);
+
         this.name = name;
+
     }
 
     getColor() {
@@ -25,31 +26,8 @@ export default class Peace {
         return this.color;
     }
 
-    v(...arg) {
-        if (this._verbose) {
-            this.l(arg);
-        }
-    }
 
-    l(...args) {
-        console.log("%c+------------------------------------kiss[" + this.name + "]-------" + this.getPath() + "\t",
-            "color:" + this.getColor() + ";",
-            this, "\r\n", ...args);
-    }
 
-    e(...args) {
-        console.error("%c+------------------------------------kiss[" + this.name + "]-------" + this.getPath() + "\t",
-            "color:" + this.getColor() + ";",
-            this, "\r\n", ...args);
-    }
-
-    getPath() {
-        if (path) {
-
-            return path;
-        }
-        return "";
-    }
 
 
     debounce(func, timeout = 300) {
@@ -91,7 +69,9 @@ export default class Peace {
         return fetch(url)
             .then(response => {
                 if (response.ok) {
-                    this.v(url, response);
+                    if (this.verbose) {
+                        log(this)(url, response);
+                    }
                     return response.text();
                 } else {
                     throw new Error("status " + response.status);
@@ -121,7 +101,9 @@ export default class Peace {
         fetch(url, {method: 'HEAD'})
             .then(response => {
                 if (response.ok) {
-                    this.v(url, response);
+                    if (this.verbose) {
+                        log(this)(url, response);
+                    }
                     return response.text();
                 } else {
                     throw new Error("status not ok 200 but " + response.status);
@@ -143,12 +125,12 @@ export default class Peace {
     }
 
     onError(url, error) {
-        err("fetch error " + url, this, error);
+        err(this)("fetch error " + url, error);
         return Promise.reject("fetch error " + url);
     }
 
     onData(url, data) {
-        log("data success " + url, this, data);
+        log(this)("data success " + url, data);
         return Promise.resolve(data);
     }
 
