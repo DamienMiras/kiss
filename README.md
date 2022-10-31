@@ -20,6 +20,7 @@ I really love angular and I work with it every days, React and vuejs are awesome
 - [ ] implement angular like html parser *ngFor *ngIf or test and compare with react
 - [ ] package with npm
 - [ ] implement services components (post put delete etc)
-- [ ] implement a model ?
+- [x] better console log
 - [ ] move all the fetch things to an httpClient
 - [ ] make colorUtil static and export in module
+- [-] refacto for a better lib user interface and less code
