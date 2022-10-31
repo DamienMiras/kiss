@@ -30,7 +30,7 @@ class EventBus {
     }
 
     getColor() {
-        return "rgb(223,241,0)";
+        return "rgb(22,255,0)";
     }
 
     register(instance) {
