@@ -1,7 +1,7 @@
 import Peace from "./peace.js";
 import Configuration from "./configuration.js";
 import Bus from "./bus.js";
-import {err, log} from "./log.js";
+import {err, info, log} from "./log.js";
 
 
 export default class Kiss extends Peace {
@@ -107,7 +107,7 @@ export default class Kiss extends Peace {
                             let kissView = new obj.default(this, kiss);
                             try {
                                 let result = kissView.load();
-
+                                info(this)("LOAD  ", kissView.name);
                                 return result.then(result => {
                                     log(this)("import loaded and class instanciated  ", kissName, result);
                                     return result;
@@ -131,18 +131,20 @@ export default class Kiss extends Peace {
 
             if (promises.length > 0) {
                 return Promise.all(promises).then(values => {
-                    try {
-                        this.onLoaded();
-                        for (let kiss of values) {
-                            if (kiss) {
+
+                    //  this.onLoaded();
+                    for (let kiss of values) {
+                        if (kiss) {
+                            try {
                                 kiss.onLoaded();
+                            } catch (e) {
+                                err(this)("onLoaded error ", e);
                             }
                         }
-
-                        log(this)("kiss childs loaded", values);
-                    } catch (e) {
-                        err(this)("onLoaded error ", e);
                     }
+
+                    log(this)("kiss childs loaded", values);
+
                     return Promise.resolve(this);
                 }).catch(e => {
                     err(this)("loading error " + this.name, e);

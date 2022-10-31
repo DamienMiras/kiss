@@ -1,5 +1,6 @@
 import Kiss from "../../../../modules/kiss.js";
 import Bus from "../../../../modules/bus.js";
+import {err, log} from "../../../../modules/log.js";
 
 export default class Dashboard extends Kiss {
     constructor(parentKiss, element) {
@@ -301,7 +302,11 @@ export default class Dashboard extends Kiss {
 
     onLoaded() {
         super.onLoaded();
-        this.chart = Highcharts.stockChart('stockChart', this.chartOptions);
+        try {
+            this.chart = Highcharts.stockChart('stockChart', this.chartOptions);
+        } catch (e) {
+            err(this)("highchart instanciation error : ", e)
+        }
         //after event onLoad the chart will postMessage asking data
 
     }

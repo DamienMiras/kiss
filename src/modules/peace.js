@@ -78,11 +78,13 @@ export default class Peace {
                 }
             })
             .then(data => {
-                let result = this.onFile(url, data);
+
                 if (onDataCallback) {
                     return onDataCallback(url, data);
+                } else {
+                    return this.onFile(url, data);
                 }
-                return result;
+
 
             })
             .catch(error => {
