@@ -45,12 +45,16 @@ export default class kissLoader extends Peace {
         new MutationObserver((mutations, observer) => {
             for (const mutation of mutations) {
                 for (const node of mutation.addedNodes) {
-
-
+                    log(this)("node : ", node);
+                    this.#loadAll(node).then(result => {
+                        log(this)("load subtree : ", result);
+                    }).catch(e => {
+                        log(this)("subtree loading failed", e);
+                    });
                 }
                 log(this)("mutation : ", mutation);
             }
-        }).observe(document.head, {childList: true});
+        }).observe(document.body, {attributes: true, childList: true, subtree: true});
     }
 
 
@@ -66,7 +70,6 @@ export default class kissLoader extends Peace {
             })
         }
         return Promise.resolve("success");
-        //return this.#loadAllJsInstances(kissessElements);
 
     }
 
@@ -123,47 +126,6 @@ export default class kissLoader extends Peace {
 
     }
 
-    #loadAllJsInstances(kisses) {
-        let promises = [];
-        for (let kissEl of kisses) {
-            let kissName = kissEl.tagName.toLowerCase();
-            log("found a kiss tag named [" + kissName, "] current  :");
-
-            let modulePath = Configuration.getBasePath() + Configuration.getViewPath() + kissName + "/" + kissName + ".js";
-            promises.push(
-                this.classFactory(modulePath, kissEl, kissName)
-            );
-
-        }
-
-        if (promises.length > 0) {
-            return Promise.all(promises).then(values => {
-                try {
-
-                    for (let kiss of values) {
-                        if (kiss) {
-                            if (!kiss.hasMethod("onLoaded")) {
-                                warn("this object is not type of kiss, it should extends Kiss or implement a onLoaded() method. " +
-                                    "(class is loaded but any dom will be loaded)" + kiss);
-                                continue;
-                            }
-                            kiss.onLoaded();
-                        }
-                    }
-
-                    log(this)("kiss childs loaded", values);
-                } catch (e) {
-                    err(this)("onLoaded error ", e);
-                }
-                return Promise.resolve(this);
-            }).catch(e => {
-                err(this)("loading error " + this.name, e);
-                return Promise.reject();
-            });
-        } else {
-            return Promise.resolve(this);
-        }
-    }
 
     classFactory(modulePath, kissEl, kissName) {
         return import(modulePath)

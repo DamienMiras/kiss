@@ -1,0 +1,15 @@
+<div class="eventlist">
+    <table>
+        <tr>
+            <td>time</td>
+            <td>from</td>
+            <td>data</td>
+        </tr>
+
+        <tr *foreach="event in events">
+            <td>{{event.time}}</td>
+            <td>{{event.from}}</td>
+            <td>{{event.data}}</td>
+        </tr>
+    </table>
+</div>

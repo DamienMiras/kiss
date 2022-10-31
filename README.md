@@ -24,3 +24,4 @@ I really love angular and I work with it every days, React and vuejs are awesome
 - [ ] move all the fetch things to an httpClient
 - [ ] make colorUtil static and export in module
 - [-] refacto for a better lib user interface and less code
+- [ ] snake case to camel case for imported file
