@@ -74,7 +74,7 @@ export default class Peace {
                     }
                     return response.text();
                 } else {
-                    throw new Error("status " + response.status);
+                  return Promise.reject("status " + response.status);
                 }
             })
             .then(data => {
