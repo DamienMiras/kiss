@@ -82,6 +82,9 @@ class bindConsole {
             info = function (caller) {
                 return format(caller, console.info)
             }
+            deb = function (caller) {
+                return format(caller, console.debug)
+            }
 
         } else {
             //TDOO implments others
