@@ -2,7 +2,7 @@ import Peace from "./peace.js";
 import Configuration from "./configuration.js";
 import Bus from "./bus.js";
 import {isNotEmpty} from "./objectUtil.js";
-import {deb, err, log, warn} from "./log.js";
+import {deb, err, info, log, warn} from "./log.js";
 
 
 export default class kissLoader extends Peace {
@@ -42,19 +42,47 @@ export default class kissLoader extends Peace {
 
 
     #observeDomMutation() {
+
         new MutationObserver((mutations, observer) => {
+
+
             for (const mutation of mutations) {
-                for (const node of mutation.addedNodes) {
-                    log(this)("node : ", node);
-                    this.#loadAll(node).then(result => {
-                        log(this)("load subtree : ", result);
-                    }).catch(e => {
-                        log(this)("subtree loading failed", e);
-                    });
+                if (mutation.type === "childList") {
+                    let kissess = mutation.target.querySelectorAll(".kiss");
+                    if (isNotEmpty(kissess)) {
+
+                        info(this)("\r\n\r\n\r\n\r\n----mutation " + mutation.type, "\r\n\t\tmutation", mutation, "\r\n\t\tnodes", mutation.addedNodes);
+                        for (const node of mutation.addedNodes) {
+                            log(this)("---------node :" + node, node);
+                        }
+                        info(this)("----Mutation for target " + mutation.target, mutation.target, "\r\n\t\tFOUND kisses : " + kissess, kissess);
+
+                        kissess.forEach(kissEl => {
+
+                                if (!Bus.isRegistred(kissEl.tagName, kissEl.id)) {
+                                    this.#loadOne(kissEl).then(result => {
+                                        log(this)("loaded subtree of: ", kissEl.tagName, result);
+
+                                        this.#loadJsClass(kissEl).then(result => {
+                                            log(this)("loaded js class: ", kissEl.tagName, result);
+                                        })
+
+
+                                    }).catch(e => {
+                                        err(this)("subtree loading failed", e);
+                                    });
+                                } else {
+                                    warn(this)("already registed", kissEl.tagName)
+                                }
+                            }
+                        );
+                    }
+
                 }
-                log(this)("mutation : ", mutation);
+
+
             }
-        }).observe(document.body, {attributes: true, childList: true, subtree: true});
+        }).observe(document.body, {childList: true, subtree: true});
     }
 
 
@@ -62,15 +90,18 @@ export default class kissLoader extends Peace {
 
         let kissessElements = kissEl.querySelectorAll('.kiss');
         for (let kissEl of kissessElements) {
-            log(this)("found a kiss tag named [" + kissEl.tagName, "] current  :");
-            //css are not mandatory and can fail without issues so no callback for this
-            this.#loadCss(kissEl);
-            this.#loadHtml(kissEl).catch(e => {
-                err(this)("html loading error for " + kissEl.tagName, kissEl);
-            })
+            //TODO promise all
+            this.#loadOne(kissEl);
         }
         return Promise.resolve("success");
 
+    }
+
+    #loadOne(kissEl) {
+        log(this)("found a kiss tag named [" + kissEl.tagName, "] current  :");
+        //css are not mandatory and can fail without issues so no callback for this
+        this.#loadCss(kissEl);
+        return this.#loadHtml(kissEl);
     }
 
     #loadHtml(kissEl) {
@@ -80,6 +111,7 @@ export default class kissLoader extends Peace {
             htmlUri,
             (url, content) => {
                 kissEl.innerHTML = content;
+                return Promise.resolve(true);
 
             },
             (url, error) => {
@@ -111,11 +143,13 @@ export default class kissLoader extends Peace {
 
                         }
                     ).catch(e => {
-                        err(this)("load js class failed for " + kissName, e)
+                        err(this)("load js class failed for " + kissName, e);
+                        return Promise.reject("load js class failed for " + kissName + e);
                     });
             }
         ).catch(e => {
-            err(this)("error while loading kiss element ", kissName, e)
+            err(this)("error while loading kiss element ", kissName, e);
+            return Promise.reject("error while loading kiss element " + kissName + e);
         });
     }
 
@@ -130,19 +164,26 @@ export default class kissLoader extends Peace {
     classFactory(modulePath, kissEl, kissName) {
         return import(modulePath)
             .then(obj => {
+                //TODO replace "this" by real parent
                 let kissView = new obj.default(this, kissEl);
                 Bus.register(kissView);
                 try {
                     if (kissView.hasMethod("load")) {
-                        kissView.load()
-                            .then(result => {
-                                log(this)("import loaded and class instanciated  ", kissName, result);
-                                return result;
-                            })
-                            .catch(e => {
-                                err(this)("instanciation error ", kissName, e);
-                                return Promise.reject("instanciation error " + kissName);
-                            });
+                        //
+                        let promise = kissView.load();
+                        if (promise && typeof promise === 'object' && typeof promise.then === 'function') {
+                            promise
+                                .then(result => {
+                                    log(this)("import loaded and class instanciated  ", kissName, result);
+                                    return result;
+                                })
+                                .catch(e => {
+                                    err(this)("instanciation error ", kissName, e);
+                                    return Promise.reject("instanciation error " + kissName);
+                                });
+                        } else {
+                            return Promise.resolve(true);
+                        }
                     }
                     return Promise.resolve(kissView);
                 } catch (e) {
