@@ -25,5 +25,6 @@ push my skills forward.
 - [x] better console log
 - [ ] move all the fetch things to an httpClient
 - [ ] make colorUtil static and export in module
-- [-] refacto for a better lib user interface and less code
+- [x] refacto for a better lib user interface and less code
 - [ ] snake case to camel case for imported file
+- [ ] cache the html loading ...make a generic cache component
