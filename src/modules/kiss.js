@@ -1,21 +1,10 @@
 import Peace from "./peace.js";
-import Configuration from "./configuration.js";
-import Bus from "./bus.js";
-import {err, info, log} from "./log.js";
+import {log} from "./log.js";
 
 
 export default class Kiss extends Peace {
     constructor(parentKiss, element) {
         super();
-
-        let apps = document.getElementsByTagName("app");
-        if (apps.length > 1) {
-            throw "Only one <app></app> tag is allowed per html document"
-        }
-        if (apps.length === 0) {
-            throw "any tag found please create one like that <app> this should no be shown</app>";
-        }
-        let app = apps[0];
 
 
         if (!parentKiss) {
@@ -23,12 +12,9 @@ export default class Kiss extends Peace {
         }
         this.parentKiss = parentKiss;
 
-        if (!element) {
-            //the bus
-            this.element = app;
-        } else {
-            this.element = element;
-        }
+
+        this.element = element;
+
         this.name = this.element.tagName.toLowerCase();
         this.id = this.element.id;
 
@@ -46,8 +32,18 @@ export default class Kiss extends Peace {
         let path = "";
         let parent = this;
         while (parent) {
-            path = parent.getName() + '>' + path;
-            parent = parent.getParent();
+            let name;
+            if (parent.hasMethod("getParent")) {
+                name = parent.getName();
+            } else {
+                name = parent.constructor.name;
+            }
+            path = name + '>' + path;
+            if (parent.hasMethod("getParent")) {
+                parent = parent.getParent();
+            } else {
+                parent = null;
+            }
         }
         return path;
     }
@@ -66,160 +62,20 @@ export default class Kiss extends Peace {
     }
 
 
-    capitalizeFirstLetter(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
 
 
     load() {
-
-        let htmlUri = Configuration.getViewPath() + this.name + "/" + this.name + ".html";
-        let cssUri = Configuration.getViewPath() + this.name + "/" + this.name + ".css";
-
-        let loadAllkisses = () => {
-            if (this.visualDebug) {
-                this.element.style.color = this.getColor();
-                this.element.style.border = '1px dashed ' + this.getColor();
-                this.element.style.boxShadow = 'inset 0px 0px 6px 0px ' + this.getColor();
-                this.element.style.display = "inline-grid";
-                this.element.style.boxSizing = "border-box";
-                this.element.style.height = "auto";
-            }
-
-            let parentElement;
-            if (this.parentKiss) {
-                parentElement = this.parentKiss.getName();
-            }
-            let kisses = this.element.querySelectorAll('.kiss');
-            let promises = [];
-            for (let kiss of kisses) {
-                let kissName = kiss.tagName.toLowerCase();
-
-                if (this.verbose) {
-                    log(this)("found a kiss tag named [" + kissName, "] current  :", this.element, "parent:", parentElement);
-                }
-
-                let modulePath = Configuration.getBasePath() + Configuration.getViewPath() + kissName + "/" + kissName + ".js";
-                promises.push(
-                    import(modulePath)
-                        .then(obj => {
-
-                            let kissView = new obj.default(this, kiss);
-                            try {
-                                let result = kissView.load();
-                                info(this)("LOAD  ", kissView.name);
-                                return result.then(result => {
-                                    log(this)("import loaded and class instanciated  ", kissName, result);
-                                    return result;
-                                }).catch(e => {
-                                    err(this)("instanciation error ", kissName, e);
-                                    return Promise.reject("instanciation error " + kissName);
-                                });
-
-                            } catch (e) {
-                                err(this)("Kiss.load() error ", e);
-                                return Promise.reject("Kiss.load() error " + kissName);
-                            }
-                        })
-                        .catch(e => {
-                            err(this)("import error " + kissName + " module path " + modulePath, e);
-                            return Promise.reject("import error " + kissName + " module path " + modulePath + " " + err);
-                        })
-                );
-
-            }
-
-            if (promises.length > 0) {
-                return Promise.all(promises).then(values => {
-
-                    //  this.onLoaded();
-                    for (let kiss of values) {
-                        if (kiss) {
-                            try {
-                                kiss.onLoaded();
-                            } catch (e) {
-                                err(this)("onLoaded error ", e);
-                            }
-                        }
-                    }
-
-                    log(this)("kiss childs loaded", values);
-
-                    return Promise.resolve(this);
-                }).catch(e => {
-                    err(this)("loading error " + this.name, e);
-                    return Promise.reject();
-                });
-            } else {
-                return Promise.resolve(this);
-            }
-
-
-        }
-        this.#loadCss(cssUri);
-
-        return this.getContent(
-            htmlUri,
-            (url, content) => {
-                this.element.innerHTML = content;
-                return loadAllkisses();
-            },
-            (url, error) => {
-                let rend = this.render();
-                if (rend !== undefined && rend !== '') {
-                    this.element.innerHTML = rend;
-                    log(this)("no kiss html file found, so render with render() ", url, error);
-                    return loadAllkisses();
-
-                } else {
-                    err(this)("<" + this.names + ' class=".kiss"> has been found but there is any file nor a content returned by render().' +
-                        ' you could makes render() returning html content, or create the folowing file with non empty content ', htmlUri);
-                    //TODO return load Service;
-                    return Promise.resolve(this);
-                }
-            }
-        );
+        //refactor compatibility
+        this.onLoaded();
     }
 
-    #loadCss(cssUri) {
-        let id = this.name + "Css";
-        if (!document.getElementById(id)) {
-            new MutationObserver((mutations, observer) => {
-                for (const mutation of mutations) {
-                    for (const node of mutation.addedNodes) {
-                        // Add additional checks here if needed
-                        // to identify if the script is the one added by the library
-                        if (node.rel === "stylesheet") {
-                            node.addEventListener('error', (event) => {
-                                node.parentNode.removeChild(node);
-                                event.stopPropagation();
-                                return true;
-                            });
-                            // Remove the observer, since its purpose is fulfilled
-                            observer.disconnect();
-                            return;
-                        }
-                    }
-                }
-            }).observe(document.head, {childList: true});
-
-            let link = document.createElement('link');
-            link.id = id;
-            link.rel = "stylesheet";
-            link.type = "text/css";
-            link.href = cssUri;
-            let child = document.head.appendChild(link);
-            log(this)("css views loaded : " + this.name, child);
-        }
-    }
 
     onLoaded() {
         log(this)("COMPONENT LOADED " + this.name);
-        Bus.register(this);
     }
 
     render() {
-        return '<div>extends Kiss and implement render() or create a file</div>'
+        return '<div>extends Kiss and implement render() or create ' + this.name + '.html file</div>';
     }
 
 

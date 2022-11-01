@@ -42,7 +42,7 @@ export default class Dashboard_menu extends Kiss {
     onMessageReceived(meta) {
         super.onMessageReceived(meta);
         if (meta.to === this.getName() && meta.data === "loaded") {
-            this.fetchData();
+           // this.fetchData();
         }
     }
 

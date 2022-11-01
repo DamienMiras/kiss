@@ -5,15 +5,4 @@ export default class Orders extends Kiss {
         super(parentKiss, element);
     }
 
-
-    onLoaded() {
-        super.onLoaded();
-    }
-
-
-    onMessageReceived(meta) {
-        super.onMessageReceived(meta);
-    }
-
-
 }

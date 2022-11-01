@@ -15,6 +15,11 @@ export default class Bus {
         return Bus.get();
     }
 
+    static isRegistred(name, id) {
+        return Bus.get().isRegistred(name, id);
+
+    }
+
     static postMessage(from, to, type, data) {
         Bus.get().postMessage(from, to, type, data);
         return Bus.get();
@@ -31,6 +36,21 @@ class EventBus {
 
     getColor() {
         return "rgb(22,255,0)";
+    }
+
+    isRegistred(name, id) {
+
+        let identifier = name;
+        if (isNotEmpty(id)) {
+            identifier += "_" + id;
+        }
+        let instances = this.registry[identifier];
+
+        return (isNotEmpty(instances) &&
+            instances.find(registred => {
+                //FIXME  tag with same name should be instantiate anyway sshould fix mutationObserver
+                return registred.constructor.name === name;
+            }) !== undefined);
     }
 
     register(instance) {
