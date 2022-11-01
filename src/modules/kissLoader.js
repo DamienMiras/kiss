@@ -8,7 +8,7 @@ import {deb, err, info, log, warn} from "./log.js";
 export default class kissLoader extends Peace {
     constructor() {
         super();
-
+        this.visualDebug = true;
         this.#observeDomMutation();
         this.#loadAll(document.body).then(result => {
             log(this)("" +
@@ -111,6 +111,7 @@ export default class kissLoader extends Peace {
             htmlUri,
             (url, content) => {
                 kissEl.innerHTML = content;
+
                 return Promise.resolve(true);
 
             },
@@ -168,6 +169,16 @@ export default class kissLoader extends Peace {
                 let kissView = new obj.default(this, kissEl);
                 Bus.register(kissView);
                 try {
+                    if (kissView.hasMethod("getColor")) {
+                        if (this.visualDebug) {
+                            kissEl.style.color = kissView.getColor();
+                            kissEl.style.border = '1px dashed ' + kissView.getColor();
+                            kissEl.style.boxShadow = 'inset 0px 0px 6px 0px ' + kissView.getColor();
+                            kissEl.style.display = "inline-grid";
+                            kissEl.style.boxSizing = "border-box";
+                            kissEl.style.height = "auto";
+                        }
+                    }
                     if (kissView.hasMethod("load")) {
                         //
                         let promise = kissView.load();
@@ -185,6 +196,7 @@ export default class kissLoader extends Peace {
                             return Promise.resolve(true);
                         }
                     }
+
                     return Promise.resolve(kissView);
                 } catch (e) {
                     err(this)("Kiss.load() error ", e);
